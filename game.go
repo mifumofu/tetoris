@@ -1,0 +1,150 @@
+package main
+
+import (
+	"math/rand"
+)
+
+// model and helper functions
+type model struct {
+	blockChar string
+	blocks    map[position]block
+	width     int
+	height    int
+
+	cursor position
+	active shape
+}
+
+func initialModel() model {
+	return model{
+		blockChar: "  ",
+		blocks:    make(map[position]block),
+
+		width:  30,
+		height: 40,
+
+		cursor: position{x: 5, y: 2},
+		active: shape{
+			color: colors[2],
+			form:  shapesForms[3],
+		},
+	}
+}
+
+func (m model) Get(p position) (block, bool) {
+	b, ok := m.blocks[p]
+	return b, ok
+}
+
+func (m *model) Set(p position, b block) {
+	p.In(m.width, m.height)
+	m.blocks[p] = b
+}
+
+func (m *model) ResetCursor() error {
+	m.SetShape(m.cursor, m.active)
+	m.cursor = position{x: 1, y: 1}
+	m.active = shape{
+		color: colors[rand.Intn(len(colors))],
+		form:  shapesForms[rand.Intn(len(shapesForms))],
+	}
+	return nil
+}
+
+// position
+type position struct {
+	x int
+	y int
+}
+
+func (p position) Add(d position) position {
+	return position{x: p.x + d.x, y: p.y + d.y}
+}
+
+func (p position) In(x, y int) bool {
+	if !(p.x > 0 && p.x <= x) {
+		return false
+	}
+
+	if !(p.y > 0 && p.y <= y) {
+		return false
+	}
+	return true
+}
+
+func (p position) Equal(a position) bool {
+	return p.x == a.x && p.y == a.y
+}
+
+// block
+type block struct {
+	color color
+}
+
+// shapes
+type shape struct {
+	form  [][]bool
+	color color
+}
+
+// omg slice overload
+var shapesForms = [][][]bool{
+	{
+		{false, true},
+		{false, true},
+		{true, true},
+	},
+	{
+		{true},
+	},
+	{
+		{true, true, true},
+	},
+	{
+		{true, true},
+		{true, true},
+	},
+}
+
+// gets the position of all blocks in a shape, relative to
+// the shape itself. for position on grid combine with p.Add
+func (s shape) BlockPos() []position {
+	var pos []position
+	for y, xs := range s.form {
+		for x, exists := range xs {
+			if exists == false {
+				continue
+			}
+
+			pos = append(pos, position{y: y + 1, x: x + 1})
+		}
+	}
+	return pos
+}
+
+// checks if s can move the difference of p in m
+// only supports one direction at a time
+func (m model) CanMove(d position) bool {
+	bpos := m.active.BlockPos()
+	for _, b := range bpos {
+		npos := m.cursor.Add(b).Add(d)
+		if _, exists := m.Get(npos); exists {
+			return false
+
+		} else if npos.x == 0 || npos.x == m.width {
+			return false
+
+		} else if npos.y == 0 || npos.y == m.height {
+			return false
+		}
+	}
+	return true
+}
+
+// converts a shape into blocks on a grid
+func (m model) SetShape(p position, s shape) {
+	bpos := s.BlockPos()
+	for _, b := range bpos {
+		m.Set(b.Add(p), block{color: s.color})
+	}
+}
