@@ -24,10 +24,7 @@ func initialModel() model {
 		height: 40,
 
 		cursor: position{x: 5, y: 2},
-		active: shape{
-			color: colors[2],
-			form:  shapesForms[3],
-		},
+		active: NewShape(),
 	}
 }
 
@@ -44,10 +41,7 @@ func (m *model) Set(p position, b block) {
 func (m *model) ResetCursor() error {
 	m.SetShape(m.cursor, m.active)
 	m.cursor = position{x: 1, y: 1}
-	m.active = shape{
-		color: colors[rand.Intn(len(colors))],
-		form:  shapesForms[rand.Intn(len(shapesForms))],
-	}
+	m.active = NewShape()
 	return nil
 }
 
@@ -85,6 +79,14 @@ type block struct {
 type shape struct {
 	form  [][]bool
 	color color
+}
+
+// generates a new random shape
+func NewShape() shape {
+	return shape{
+		color: colors[rand.Intn(len(colors))],
+		form:  randomShapeForm(shapesForms),
+	}
 }
 
 // omg slice overload
