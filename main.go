@@ -60,6 +60,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cursor.x += 1
 			}
 
+		// up
+		case "k", "up":
+			m.active.form = m.active.form.Rotate()
+
 		// down
 		case "j", "down":
 			if m.CanMove(position{y: 1}) {
@@ -87,7 +91,7 @@ func gameView(m model) string {
 	blocks := maps.Clone(m.blocks)
 
 	// draw cursor blocks
-	for _, b := range m.active.BlockPos() {
+	for _, b := range m.active.form.BlockPos() {
 		blocks[m.cursor.Add(b)] = block{color: m.active.color}
 	}
 

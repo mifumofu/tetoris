@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand"
+	"slices"
 )
 
 // model and helper functions
@@ -77,9 +78,11 @@ type block struct {
 
 // shapes
 type shape struct {
-	form  [][]bool
+	form  shapeForm
 	color color
 }
+
+type shapeForm [][]bool
 
 // generates a new random shape
 func NewShape() shape {
@@ -89,8 +92,24 @@ func NewShape() shape {
 	}
 }
 
+func randomShapeForm(sp []shapeForm) shapeForm {
+	s := sp[rand.Intn(len(sp))]
+
+	// randomly flip shape form
+	if rand.Int()%2 == 0 {
+		s = s.Flip()
+	}
+
+	// randomly flop shape form
+	if rand.Int()%2 == 0 {
+		s = s.Flop()
+	}
+
+	return s
+}
+
 // omg slice overload
-var shapesForms = [][][]bool{
+var shapesForms = []shapeForm{
 	{
 		{false, true},
 		{false, true},
@@ -108,11 +127,34 @@ var shapesForms = [][][]bool{
 	},
 }
 
+// rotates a shape's form 90deg
+func (s shapeForm) Rotate() shapeForm {
+	var n []position
+	for _, p := range s.BlockPos() {
+		n = append(n, position{x: -p.y, y: p.x})
+	}
+	return s
+}
+
+// flips a shape's form horizontally
+func (s shapeForm) Flip() shapeForm {
+	for _, v := range s {
+		slices.Reverse(v)
+	}
+	return s
+}
+
+// flips a shape's form vertically
+func (s shapeForm) Flop() shapeForm {
+	slices.Reverse(s)
+	return s
+}
+
 // gets the position of all blocks in a shape, relative to
 // the shape itself. for position on grid combine with p.Add
-func (s shape) BlockPos() []position {
+func (s shapeForm) BlockPos() []position {
 	var pos []position
-	for y, xs := range s.form {
+	for y, xs := range s {
 		for x, exists := range xs {
 			if exists == false {
 				continue
@@ -127,7 +169,7 @@ func (s shape) BlockPos() []position {
 // checks if s can move the difference of p in m
 // only supports one direction at a time
 func (m model) CanMove(d position) bool {
-	bpos := m.active.BlockPos()
+	bpos := m.active.form.BlockPos()
 	for _, b := range bpos {
 		npos := m.cursor.Add(b).Add(d)
 		if _, exists := m.Get(npos); exists {
@@ -145,7 +187,7 @@ func (m model) CanMove(d position) bool {
 
 // converts a shape into blocks on a grid
 func (m model) SetShape(p position, s shape) {
-	bpos := s.BlockPos()
+	bpos := s.form.BlockPos()
 	for _, b := range bpos {
 		m.Set(b.Add(p), block{color: s.color})
 	}
