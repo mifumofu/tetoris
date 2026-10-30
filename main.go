@@ -5,6 +5,7 @@ import (
 	"maps"
 	"os"
 	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 )
@@ -32,11 +33,27 @@ var colors = []color{
 
 func (m model) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now, please."
-	return nil
+	return doTick()
+}
+
+type tickMsg time.Time
+
+func doTick() tea.Cmd {
+	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
+		return tickMsg(t)
+	})
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+
+	case tickMsg:
+		if m.CanMove(position{y: 1}) {
+			m.cursor.y += 1
+		} else {
+			m.ResetCursor()
+		}
+		return m, doTick()
 
 	// Is it a key press?
 	case tea.KeyPressMsg:
