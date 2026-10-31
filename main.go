@@ -48,11 +48,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tickMsg:
-		if m.CanMove(position{y: 1}) {
-			m.cursor.y += 1
-		} else {
-			m.ResetCursor()
-		}
+		m.Move(position{y: 1})
 		return m, doTick()
 
 	// Is it a key press?

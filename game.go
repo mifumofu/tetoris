@@ -31,6 +31,9 @@ func initialModel() model {
 
 func (m model) Get(p position) (block, bool) {
 	b, ok := m.blocks[p]
+	if b.color == "" {
+		return b, false
+	}
 	return b, ok
 }
 
@@ -48,9 +51,19 @@ func (m *model) ResetCursor() {
 // handles moving a block, resets position if necessary
 func (m *model) Move(d position) {
 	if !m.CanMove(d) {
+
+		if d.y > 0 && d.x == 0 {
+			cur := m.cursor
+			form := m.active.form.BlockPos()
+			m.ResetCursor()
+
+			for _, b := range form {
+				if m.CanClearRow(cur.Add(b).y) {
+					m.ClearRow(cur.Add(b).y)
+				}
+			}
+		}
 		return
-	} else if !m.CanMove(d) && d.y > 0 {
-		m.ResetCursor()
 	}
 
 	(*m).cursor.y += d.y
@@ -74,6 +87,37 @@ func (m model) CanMove(d position) bool {
 		}
 	}
 	return true
+}
+
+// checks if a row can be cleared
+func (m model) CanClearRow(y int) bool {
+	for px := range m.width {
+		pos := position{x: px, y: y}
+		b, exists := m.Get(pos)
+		_ = b
+		if pos.x == 0 {
+			continue
+		}
+		if !exists {
+			return false
+		}
+	}
+	return true
+}
+
+// clears a row, does not check if it is completely full
+func (m model) ClearRow(y int) {
+	rangeover := m.height - (m.height - y) + 1
+	for py := range rangeover {
+		if rangeover-py == m.height {
+			continue
+		}
+		for px := range m.width {
+			checkb := rangeover - py
+			fromBlock, _ := m.Get(position{y: checkb - 1, x: px + 1})
+			m.Set(position{y: checkb, x: px + 1}, fromBlock)
+		}
+	}
 }
 
 // position
