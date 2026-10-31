@@ -39,11 +39,41 @@ func (m *model) Set(p position, b block) {
 	m.blocks[p] = b
 }
 
-func (m *model) ResetCursor() error {
+func (m *model) ResetCursor() {
 	m.SetShape(m.cursor, m.active)
 	m.cursor = position{x: 1, y: 1}
 	m.active = NewShape()
-	return nil
+}
+
+// handles moving a block, resets position if necessary
+func (m *model) Move(d position) {
+	if !m.CanMove(d) {
+		return
+	} else if !m.CanMove(d) && d.y > 0 {
+		m.ResetCursor()
+	}
+
+	(*m).cursor.y += d.y
+	(*m).cursor.x += d.x
+}
+
+// checks if s can move the difference of p in m
+// only supports one direction at a time
+func (m model) CanMove(d position) bool {
+	bpos := m.active.form.BlockPos()
+	for _, b := range bpos {
+		npos := m.cursor.Add(b).Add(d)
+		if _, exists := m.Get(npos); exists {
+			return false
+
+		} else if npos.x == 0 || npos.x == m.width {
+			return false
+
+		} else if npos.y == 0 || npos.y == m.height {
+			return false
+		}
+	}
+	return true
 }
 
 // position
@@ -178,25 +208,6 @@ func (s shapeForm) BlockPos() []position {
 		}
 	}
 	return pos
-}
-
-// checks if s can move the difference of p in m
-// only supports one direction at a time
-func (m model) CanMove(d position) bool {
-	bpos := m.active.form.BlockPos()
-	for _, b := range bpos {
-		npos := m.cursor.Add(b).Add(d)
-		if _, exists := m.Get(npos); exists {
-			return false
-
-		} else if npos.x == 0 || npos.x == m.width {
-			return false
-
-		} else if npos.y == 0 || npos.y == m.height {
-			return false
-		}
-	}
-	return true
 }
 
 // converts a shape into blocks on a grid

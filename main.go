@@ -67,15 +67,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// left
 		case "h", "left":
-			if m.CanMove(position{x: -1}) {
-				m.cursor.x -= 1
-			}
+			m.Move(position{x: -1})
 
 		// right
 		case "l", "right":
-			if m.CanMove(position{x: 1}) {
-				m.cursor.x += 1
-			}
+			m.Move(position{x: 1})
 
 		// up
 		case "k", "up":
@@ -83,11 +79,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// down
 		case "j", "down":
-			if m.CanMove(position{y: 1}) {
-				m.cursor.y += 1
-			} else {
-				m.ResetCursor()
-			}
+			m.Move(position{y: 1})
 		}
 	}
 
