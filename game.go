@@ -129,11 +129,25 @@ var shapesForms = []shapeForm{
 
 // rotates a shape's form 90deg
 func (s shapeForm) Rotate() shapeForm {
-	var n []position
-	for _, p := range s.BlockPos() {
-		n = append(n, position{x: -p.y, y: p.x})
+	var n shapeForm
+	// transpose the slice, move rows to columns
+	// we assume all rows are the same length
+	for pa, a := range s {
+		for pb, b := range a {
+			if pa == 0 {
+				n = append(n, []bool{b})
+			} else {
+				n[pb] = append(n[pb], b)
+			}
+		}
 	}
-	return s
+
+	// rotate al
+	for p := range n {
+		slices.Reverse(n[p])
+	}
+
+	return n
 }
 
 // flips a shape's form horizontally
