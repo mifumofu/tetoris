@@ -59,7 +59,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch {
 		case key.Matches(msg, m.keys.Up):
-			m.active.form = m.active.form.Rotate()
+			if m.running {
+				m.active.form = m.active.form.Rotate()
+			}
 
 		case key.Matches(msg, m.keys.Down):
 			m.Move(position{y: 1})
@@ -69,6 +71,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, m.keys.Right):
 			m.Move(position{x: 1})
+
+		case key.Matches(msg, m.keys.Pause):
+			m.running = !m.running
 
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
@@ -83,6 +88,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // keyMap defines a set of keybindings. To work for help it must satisfy
 // key.Map. It could also very easily be a map[string]key.Binding.
 type keyMap struct {
+	Pause key.Binding
 	Up    key.Binding
 	Down  key.Binding
 	Left  key.Binding
@@ -99,7 +105,7 @@ func (k keyMap) ShortHelp() []key.Binding {
 // Show all keys to user
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Left, k.Right, k.Quit}, // first column
+		{k.Up, k.Down, k.Left, k.Right, k.Pause, k.Quit}, // first column
 	}
 }
 
@@ -120,6 +126,10 @@ var keys = keyMap{
 		key.WithKeys("right", "l", "d"),
 		key.WithHelp("→/l/d", "move right"),
 	),
+	Pause: key.NewBinding(
+		key.WithKeys("p"),
+		key.WithHelp("p", "(un)pause"),
+	),
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
 		key.WithHelp("q", "quit"),
@@ -127,10 +137,11 @@ var keys = keyMap{
 }
 
 func (m model) View() tea.View {
-	gv := lipgloss.NewStyle().
-		Border(lipgloss.DoubleBorder()).
-		MarginLeft(5).
-		Render(gameView(m))
+	gv := lipgloss.NewStyle().Border(lipgloss.DoubleBorder())
+
+	if !m.running {
+		gv = gv.BorderForeground(lipgloss.Red)
+	}
 
 	// join final layout together
 	layout := lipgloss.NewStyle().
@@ -139,7 +150,7 @@ func (m model) View() tea.View {
 			lipgloss.Left,
 
 			m.infoView(),
-			gv,
+			gv.Render(gameView(m)),
 		))
 	v := tea.NewView(layout)
 	v.AltScreen = true
@@ -176,7 +187,15 @@ func gameView(m model) string {
 func (m model) infoView() string {
 	var b strings.Builder
 
-	b.WriteString("tetoris\n\n")
+	b.WriteString("tetoris")
+
+	if m.running {
+		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Green).Render(" ▶"))
+	} else {
+		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Red).Render(" ⏸"))
+	}
+	b.WriteRune('\n')
+	b.WriteRune('\n')
 
 	// Recent Actions
 	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Recent actions"))

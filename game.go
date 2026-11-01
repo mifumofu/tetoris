@@ -9,6 +9,7 @@ import (
 
 // model and helper functions
 type model struct {
+	running bool
 	keys    keyMap
 	help    help.Model
 	actions []position // list of all moves made
@@ -24,8 +25,9 @@ type model struct {
 
 func initialModel() model {
 	m := model{
-		keys: keys,
-		help: help.New(),
+		running: false,
+		keys:    keys,
+		help:    help.New(),
 
 		blockChar: "  ",
 		blocks:    make(map[position]block),
@@ -61,8 +63,11 @@ func (m *model) ResetCursor() {
 
 // handles moving a block, resets position if necessary
 func (m *model) Move(d position) {
-	if !m.CanMove(d) {
+	if !m.running {
+		return
+	}
 
+	if !m.CanMove(d) {
 		if d.y > 0 && d.x == 0 {
 			cur := m.cursor
 			form := m.active.form.BlockPos()
