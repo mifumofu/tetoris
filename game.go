@@ -32,7 +32,7 @@ type model struct {
 
 func initialModel() model {
 	m := model{
-		state: statePaused,
+		state: stateRunning,
 		keys:  keys,
 		help:  help.New(),
 		seed:  rand.Int63(),
