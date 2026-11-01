@@ -5,6 +5,7 @@ import (
 	"maps"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -137,7 +138,7 @@ var keys = keyMap{
 }
 
 func (m model) View() tea.View {
-	gv := lipgloss.NewStyle().Border(lipgloss.DoubleBorder())
+	gv := lipgloss.NewStyle().Border(lipgloss.DoubleBorder()).MarginLeft(1)
 
 	if !m.running {
 		gv = gv.BorderForeground(lipgloss.Red)
@@ -150,6 +151,7 @@ func (m model) View() tea.View {
 			lipgloss.Left,
 
 			m.infoView(),
+
 			gv.Render(gameView(m)),
 		))
 	v := tea.NewView(layout)
@@ -197,10 +199,17 @@ func (m model) infoView() string {
 	b.WriteRune('\n')
 	b.WriteRune('\n')
 
+	// Seed
+	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Seed"))
+	b.WriteRune('\n')
+	b.WriteString(strconv.Itoa(int(m.seed)))
+	b.WriteRune('\n')
+	b.WriteRune('\n')
+
 	// Recent Actions
 	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Recent actions"))
 	b.WriteRune('\n')
-	b.WriteString(lipgloss.NewStyle().Bold(false).Render(recentActions(m.actions)))
+	b.WriteString(recentActions(m.actions))
 
 	// Keybinds
 	b.WriteRune('\n')

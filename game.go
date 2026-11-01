@@ -10,6 +10,9 @@ import (
 // model and helper functions
 type model struct {
 	running bool
+	rand    *rand.Rand
+	seed    int64
+
 	keys    keyMap
 	help    help.Model
 	actions []position // list of all moves made
@@ -28,6 +31,7 @@ func initialModel() model {
 		running: false,
 		keys:    keys,
 		help:    help.New(),
+		seed:    rand.Int63(),
 
 		blockChar: "  ",
 		blocks:    make(map[position]block),
@@ -36,8 +40,9 @@ func initialModel() model {
 		height: 25,
 
 		cursor: position{x: 5, y: 0},
-		active: NewShape(),
 	}
+	m.rand = rand.New(rand.NewSource(m.seed))
+	m.active = m.NewShape()
 	m.help.ShowAll = true
 	return m
 }
@@ -58,7 +63,7 @@ func (m *model) Set(p position, b block) {
 func (m *model) ResetCursor() {
 	m.SetShape(m.cursor, m.active)
 	m.cursor = position{x: 1, y: 0}
-	m.active = NewShape()
+	m.active = m.NewShape()
 }
 
 // handles moving a block, resets position if necessary
@@ -176,23 +181,23 @@ type shape struct {
 type shapeForm [][]bool
 
 // generates a new random shape
-func NewShape() shape {
+func (m model) NewShape() shape {
 	return shape{
-		color: colors[rand.Intn(len(colors))],
-		form:  randomShapeForm(shapesForms),
+		color: colors[m.rand.Intn(len(colors))],
+		form:  randomShapeForm(shapesForms, m.rand),
 	}
 }
 
-func randomShapeForm(sp []shapeForm) shapeForm {
-	s := sp[rand.Intn(len(sp))]
+func randomShapeForm(sp []shapeForm, seed *rand.Rand) shapeForm {
+	s := sp[seed.Intn(len(sp))]
 
 	// randomly flip shape form
-	if rand.Int()%2 == 0 {
+	if seed.Int()%2 == 0 {
 		s = s.Flip()
 	}
 
 	// randomly flop shape form
-	if rand.Int()%2 == 0 {
+	if seed.Int()%2 == 0 {
 		s = s.Flop()
 	}
 
