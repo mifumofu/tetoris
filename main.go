@@ -221,18 +221,29 @@ func gameView(m model) string {
 	return b.String()
 }
 
+const tetorisLogo string = `   ▀▀▀▀   █
+  ▀▀▀█▀▀  █▀▄▄
+   ▄▀     █   ▀ 
+         
+  █   █   ▀▀▀▀▀█
+  ▀   █     ▄▄▀ 
+   ▄▄▀    ▄▀  ▀▄
+  
+     tetoris
+
+`
+
 func (m model) infoView() string {
 	var b strings.Builder
 
-	b.WriteString("tetoris")
+	b.WriteString(tetorisLogo)
 
 	if m.state == stateRunning {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Green).Render(" ▶"))
+		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Green).Render("Running ▶"))
 	} else if m.state == statePaused {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Red).Render(" ⏸"))
+		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Red).Render("Paused ⏸"))
 	} else if m.state == stateEnd {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Yellow).Render(" ⏹"))
-		b.WriteString("\n\nGame over.")
+		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Yellow).Render("Game ended ⏹"))
 	}
 	b.WriteString("\n\n")
 
