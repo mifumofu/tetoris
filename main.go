@@ -183,12 +183,12 @@ func gameView(m model) string {
 	// draw hint of final block position
 	c := m.FinalPosition(m.active.form)
 	for _, b := range m.active.form.BlockPos() {
-		blocks[c.Add(b)] = block{color: colorBgBlack}
+		blocks[c.Add(b)] = block{color: colorBgBlack, character: '░'}
 	}
 
 	// draw cursor blocks
 	for _, b := range m.active.form.BlockPos() {
-		blocks[m.cursor.Add(b)] = block{color: m.active.color}
+		blocks[m.cursor.Add(b)] = block{color: m.active.color, character: ' '}
 	}
 
 	var b strings.Builder
@@ -199,10 +199,11 @@ func gameView(m model) string {
 		for w := range m.width {
 			if bk, ok := blocks[position{y: h, x: w}]; ok {
 				b.WriteString(string(bk.color))
-				b.WriteString(m.blockChar)
+				b.WriteRune(bk.character)
+				b.WriteRune(bk.character)
 				b.WriteString(string(colorReset))
 			} else {
-				b.WriteString(m.blockChar)
+				b.WriteString("  ")
 			}
 		}
 	}

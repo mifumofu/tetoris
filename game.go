@@ -21,10 +21,9 @@ type model struct {
 	keys keyMap
 	help help.Model
 
-	blockChar string
-	blocks    map[position]block
-	width     int
-	height    int
+	blocks map[position]block
+	width  int
+	height int
 
 	cursor position
 	active shape
@@ -37,8 +36,7 @@ func initialModel() model {
 		help:    help.New(),
 		seed:    rand.Int63(),
 
-		blockChar: "  ",
-		blocks:    make(map[position]block),
+		blocks: make(map[position]block),
 
 		width:  13,
 		height: 25,
@@ -181,13 +179,15 @@ func (p position) Equal(a position) bool {
 
 // block
 type block struct {
-	color color
+	color     color
+	character rune
 }
 
 // shapes
 type shape struct {
-	form  shapeForm
-	color color
+	form      shapeForm
+	character rune
+	color     color
 }
 
 type shapeForm [][]bool
@@ -195,8 +195,9 @@ type shapeForm [][]bool
 // generates a new random shape
 func (m model) NewShape() shape {
 	return shape{
-		color: colors[m.rand.Intn(len(colors))],
-		form:  randomShapeForm(shapesForms, m.rand),
+		color:     colors[m.rand.Intn(len(colors))],
+		form:      randomShapeForm(shapesForms, m.rand),
+		character: ' ',
 	}
 }
 
@@ -300,7 +301,7 @@ func (s shapeForm) BlockPos() []position {
 func (m model) SetShape(p position, s shape) {
 	bpos := s.form.BlockPos()
 	for _, b := range bpos {
-		m.Set(b.Add(p), block{color: s.color})
+		m.Set(b.Add(p), block{color: s.color, character: s.character})
 	}
 }
 
