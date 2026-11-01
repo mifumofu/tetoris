@@ -158,9 +158,14 @@ func (m model) ClearRow(y int) {
 			continue
 		}
 		for px := range m.width {
-			checkb := rangeover - py
-			fromBlock, _ := m.Get(position{y: checkb - 1, x: px})
-			m.Set(position{y: checkb, x: px}, fromBlock)
+			pos := position{y: rangeover - py, x: px}
+			block, exists := m.Get(position{x: pos.x, y: pos.y - 1})
+
+			if exists {
+				m.Set(pos, block)
+			} else {
+				delete(m.blocks, pos)
+			}
 		}
 	}
 
