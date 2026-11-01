@@ -24,7 +24,7 @@ func initialModel() model {
 		width:  30,
 		height: 40,
 
-		cursor: position{x: 5, y: 2},
+		cursor: position{x: 5, y: 0},
 		active: NewShape(),
 	}
 }
@@ -44,7 +44,7 @@ func (m *model) Set(p position, b block) {
 
 func (m *model) ResetCursor() {
 	m.SetShape(m.cursor, m.active)
-	m.cursor = position{x: 1, y: 1}
+	m.cursor = position{x: 0, y: 0}
 	m.active = NewShape()
 }
 
@@ -79,10 +79,10 @@ func (m model) CanMove(d position) bool {
 		if _, exists := m.Get(npos); exists {
 			return false
 
-		} else if npos.x == 0 || npos.x == m.width {
+		} else if npos.x < 0 || npos.x == m.width {
 			return false
 
-		} else if npos.y == 0 || npos.y == m.height {
+		} else if npos.y < 0 || npos.y == m.height {
 			return false
 		}
 	}
@@ -107,15 +107,15 @@ func (m model) CanClearRow(y int) bool {
 
 // clears a row, does not check if it is completely full
 func (m model) ClearRow(y int) {
-	rangeover := m.height - (m.height - y) + 1
+	rangeover := m.height - (m.height - y)
 	for py := range rangeover {
 		if rangeover-py == m.height {
 			continue
 		}
 		for px := range m.width {
 			checkb := rangeover - py
-			fromBlock, _ := m.Get(position{y: checkb - 1, x: px + 1})
-			m.Set(position{y: checkb, x: px + 1}, fromBlock)
+			fromBlock, _ := m.Get(position{y: checkb - 1, x: px})
+			m.Set(position{y: checkb, x: px}, fromBlock)
 		}
 	}
 }
@@ -248,7 +248,7 @@ func (s shapeForm) BlockPos() []position {
 				continue
 			}
 
-			pos = append(pos, position{y: y + 1, x: x + 1})
+			pos = append(pos, position{y: y, x: x})
 		}
 	}
 	return pos

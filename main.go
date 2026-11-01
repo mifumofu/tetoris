@@ -102,8 +102,11 @@ func gameView(m model) string {
 
 	var b strings.Builder
 	for h := range m.height {
+		if h > 0 { // skips a blank space at the top
+			b.WriteString("\n")
+		}
 		for w := range m.width {
-			if bk, ok := blocks[position{y: h + 1, x: w + 1}]; ok {
+			if bk, ok := blocks[position{y: h, x: w}]; ok {
 				b.WriteString(string(bk.color))
 				b.WriteString(m.blockChar)
 				b.WriteString(string(colorReset))
@@ -111,7 +114,6 @@ func gameView(m model) string {
 				b.WriteString(m.blockChar)
 			}
 		}
-		b.WriteString("\n")
 	}
 	return b.String()
 }
