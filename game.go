@@ -9,13 +9,14 @@ import (
 
 // model and helper functions
 type model struct {
+	score   int
 	running bool
+	actions []position // list of all moves made
 	rand    *rand.Rand
 	seed    int64
 
-	keys    keyMap
-	help    help.Model
-	actions []position // list of all moves made
+	keys keyMap
+	help help.Model
 
 	blockChar string
 	blocks    map[position]block
@@ -69,6 +70,7 @@ func (m *model) ResetCursor() {
 	m.SetShape(m.cursor, m.active)
 	m.cursor = position{x: 1, y: 0}
 	m.active = m.NewShape()
+	m.score += 5
 }
 
 // handles moving a block, resets position if necessary
@@ -145,6 +147,8 @@ func (m model) ClearRow(y int) {
 			m.Set(position{y: checkb, x: px}, fromBlock)
 		}
 	}
+
+	m.score += 50
 }
 
 // position

@@ -214,15 +214,19 @@ func (m model) infoView() string {
 	} else {
 		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Red).Render(" ⏸"))
 	}
+	b.WriteString("\n\n")
+
+	// Score
+	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Score"))
 	b.WriteRune('\n')
-	b.WriteRune('\n')
+	b.WriteString(strconv.Itoa(int(m.score)))
+	b.WriteString("\n\n")
 
 	// Seed
 	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Seed"))
 	b.WriteRune('\n')
 	b.WriteString(strconv.Itoa(int(m.seed)))
-	b.WriteRune('\n')
-	b.WriteRune('\n')
+	b.WriteString("\n\n")
 
 	// Recent Actions
 	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Recent actions"))
@@ -230,8 +234,7 @@ func (m model) infoView() string {
 	b.WriteString(recentActions(m.actions))
 
 	// Keybinds
-	b.WriteRune('\n')
-	b.WriteRune('\n')
+	b.WriteString("\n\n")
 	b.WriteString(m.help.View(m.keys))
 	return b.String()
 }
