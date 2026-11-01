@@ -202,19 +202,27 @@ func randomShapeForm(sp []shapeForm) shapeForm {
 // omg slice overload
 var shapesForms = []shapeForm{
 	{
-		{false, true},
-		{false, true},
-		{true, true},
+		{true, true, true, true},
 	},
 	{
-		{true},
+		{true, false, false},
+		{true, true, true},
 	},
 	{
+		{false, false, true},
 		{true, true, true},
 	},
 	{
 		{true, true},
 		{true, true},
+	},
+	{
+		{false, true, true},
+		{true, true, false},
+	},
+	{
+		{false, true, false},
+		{true, true, true},
 	},
 }
 
