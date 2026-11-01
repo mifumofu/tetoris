@@ -1,6 +1,10 @@
 # tetoris
 tetris, but in as a static binary and TUI!!!!1
 
+![A screenshot of a terminal window open with tetoris running](screenshot.webp)
+
+Made for fun
+
 Features:
 - [x] all features related to moving a block, including rotating
 - [x] all shapes of the original
