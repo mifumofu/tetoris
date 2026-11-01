@@ -239,11 +239,11 @@ func (m model) infoView() string {
 	b.WriteString(tetorisLogo)
 
 	if m.state == stateRunning {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Green).Render("Running ▶"))
+		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Green).Render("▶ Running"))
 	} else if m.state == statePaused {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Red).Render("Paused ⏸"))
+		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Red).Render("⏸ Paused"))
 	} else if m.state == stateEnd {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Yellow).Render("Game ended ⏹"))
+		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Yellow).Render("⏹ Game ended"))
 	}
 	b.WriteString("\n\n")
 
