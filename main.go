@@ -56,6 +56,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Move(position{y: 1})
 		return m, doTick()
 
+	case tea.WindowSizeMsg:
+		m.termHeight = msg.Height
+		m.termWidth = msg.Width
+
 	// Is it a key press?
 	case tea.KeyPressMsg:
 
@@ -158,7 +162,7 @@ func (m model) View() tea.View {
 
 	// join final layout together
 	layout := lipgloss.NewStyle().
-		Align(lipgloss.Center).
+		AlignHorizontal(lipgloss.Center).
 		Render(lipgloss.JoinHorizontal(
 			lipgloss.Left,
 
@@ -166,7 +170,8 @@ func (m model) View() tea.View {
 
 			gv.Render(gameView(m)),
 		))
-	v := tea.NewView(layout)
+
+	v := tea.NewView(lipgloss.Place(m.termWidth, m.termHeight, lipgloss.Center, lipgloss.Center, layout))
 	v.AltScreen = true
 
 	return v

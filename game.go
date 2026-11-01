@@ -15,6 +15,9 @@ type model struct {
 	rand    *rand.Rand
 	seed    int64
 
+	termHeight int
+	termWidth  int
+
 	keys keyMap
 	help help.Model
 
