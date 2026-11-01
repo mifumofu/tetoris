@@ -65,7 +65,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch {
 		case key.Matches(msg, m.keys.Up):
-			if m.running {
+			if m.state == stateRunning {
 				rot, canrotate := m.active.form.Rotate(), true
 				// don't allow the player to rotate the block into a wall
 				for _, b := range rot.BlockPos() {
@@ -90,7 +90,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Move(position{x: 1})
 
 		case key.Matches(msg, m.keys.Pause):
-			m.running = !m.running
+			if m.state == stateRunning {
+				m.state = statePaused
+			} else if m.state == statePaused {
+				m.state = stateRunning
+			}
 
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
@@ -156,8 +160,10 @@ var keys = keyMap{
 func (m model) View() tea.View {
 	gv := lipgloss.NewStyle().Border(lipgloss.DoubleBorder()).MarginLeft(1)
 
-	if !m.running {
+	if m.state == statePaused {
 		gv = gv.BorderForeground(lipgloss.Red)
+	} else if m.state == stateEnd {
+		gv = gv.BorderForeground(lipgloss.Yellow)
 	}
 
 	// join final layout together
@@ -179,6 +185,11 @@ func (m model) View() tea.View {
 
 func gameView(m model) string {
 	blocks := maps.Clone(m.blocks)
+
+	// draw hint of final block position
+	for w := range m.width {
+		blocks[position{x: w, y: m.killLine}] = block{character: '-'}
+	}
 
 	// draw hint of final block position
 	c := m.FinalPosition(m.active.form)
@@ -215,10 +226,13 @@ func (m model) infoView() string {
 
 	b.WriteString("tetoris")
 
-	if m.running {
+	if m.state == stateRunning {
 		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Green).Render(" ▶"))
-	} else {
+	} else if m.state == statePaused {
 		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Red).Render(" ⏸"))
+	} else if m.state == stateEnd {
+		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Yellow).Render(" ⏹"))
+		b.WriteString("\n\nGame over.")
 	}
 	b.WriteString("\n\n")
 

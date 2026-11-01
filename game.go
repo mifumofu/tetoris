@@ -10,7 +10,7 @@ import (
 // model and helper functions
 type model struct {
 	score   int
-	running bool
+	state   state
 	actions []position // list of all moves made
 	rand    *rand.Rand
 	seed    int64
@@ -21,9 +21,10 @@ type model struct {
 	keys keyMap
 	help help.Model
 
-	blocks map[position]block
-	width  int
-	height int
+	blocks   map[position]block
+	killLine int // y of kill line
+	width    int
+	height   int
 
 	cursor position
 	active shape
@@ -31,15 +32,16 @@ type model struct {
 
 func initialModel() model {
 	m := model{
-		running: false,
-		keys:    keys,
-		help:    help.New(),
-		seed:    rand.Int63(),
+		state: statePaused,
+		keys:  keys,
+		help:  help.New(),
+		seed:  rand.Int63(),
 
 		blocks: make(map[position]block),
 
-		width:  13,
-		height: 25,
+		killLine: 2,
+		width:    13,
+		height:   25,
 
 		cursor: position{x: 5, y: 0},
 	}
@@ -48,6 +50,14 @@ func initialModel() model {
 	m.help.ShowAll = true
 	return m
 }
+
+type state int8
+
+const (
+	stateRunning state = iota
+	statePaused
+	stateEnd
+)
 
 func (m model) Get(p position) (block, bool) {
 	// block does not exist if its out of bounds
@@ -69,14 +79,19 @@ func (m *model) Set(p position, b block) {
 
 func (m *model) ResetCursor() {
 	m.SetShape(m.cursor, m.active)
-	m.cursor = position{x: 1, y: 0}
+	m.cursor = position{x: m.width/2 - 1, y: 0}
 	m.active = m.NewShape()
+
+	if m.FinalPosition(m.active.form).y <= m.killLine {
+		m.state = stateEnd
+	}
+
 	m.score += 5
 }
 
 // handles moving a block, resets position if necessary
 func (m *model) Move(d position) {
-	if !m.running {
+	if m.state != stateRunning {
 		return
 	}
 
