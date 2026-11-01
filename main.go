@@ -18,6 +18,14 @@ import (
 var seed int64
 
 func main() {
+	if e := os.Getenv("DEBUG"); e != "" {
+		f, err := tea.LogToFile(e, "")
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+	}
+
 	flag.Int64Var(&seed, "seed", 0, "Change the seed of a game")
 	flag.Parse()
 
@@ -95,6 +103,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, m.keys.Right):
 			m.Move(position{x: 1})
 
+		case key.Matches(msg, m.keys.Instadown):
+			m.cursor = m.FinalPosition(m.active.form)
+			m.Move(position{y: 1})
+
 		case key.Matches(msg, m.keys.Pause):
 			if m.state == stateRunning {
 				m.state = statePaused
@@ -115,13 +127,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // keyMap defines a set of keybindings. To work for help it must satisfy
 // key.Map. It could also very easily be a map[string]key.Binding.
 type keyMap struct {
-	Pause key.Binding
-	Up    key.Binding
-	Down  key.Binding
-	Left  key.Binding
-	Right key.Binding
-	Help  key.Binding
-	Quit  key.Binding
+	Pause     key.Binding
+	Up        key.Binding
+	Down      key.Binding
+	Left      key.Binding
+	Right     key.Binding
+	Instadown key.Binding
+	Help      key.Binding
+	Quit      key.Binding
 }
 
 // we don't use this since we can show all keys vertically, so return nothing
@@ -132,7 +145,7 @@ func (k keyMap) ShortHelp() []key.Binding {
 // Show all keys to user
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Left, k.Right, k.Pause, k.Quit}, // first column
+		{k.Up, k.Down, k.Left, k.Right, k.Instadown, k.Pause, k.Quit}, // first column
 	}
 }
 
@@ -152,6 +165,10 @@ var keys = keyMap{
 	Right: key.NewBinding(
 		key.WithKeys("right", "l", "d"),
 		key.WithHelp("→/l/d", "move right"),
+	),
+	Instadown: key.NewBinding(
+		key.WithKeys("space"),
+		key.WithHelp("space", "instadown"),
 	),
 	Pause: key.NewBinding(
 		key.WithKeys("p"),
