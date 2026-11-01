@@ -25,6 +25,7 @@ func main() {
 type color string
 
 var colorReset color = "\x1b[0m"
+var colorBgBlack color = "\x1b[40m"
 var colors = []color{
 	"\x1b[41m", // Red
 	"\x1b[42m", // Green
@@ -173,6 +174,12 @@ func (m model) View() tea.View {
 
 func gameView(m model) string {
 	blocks := maps.Clone(m.blocks)
+
+	// draw hint of final block position
+	c := m.FinalPosition(m.active.form)
+	for _, b := range m.active.form.BlockPos() {
+		blocks[c.Add(b)] = block{color: colorBgBlack}
+	}
 
 	// draw cursor blocks
 	for _, b := range m.active.form.BlockPos() {

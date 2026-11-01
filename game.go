@@ -48,6 +48,11 @@ func initialModel() model {
 }
 
 func (m model) Get(p position) (block, bool) {
+	// block does not exist if its out of bounds
+	if p.x >= m.width || p.x < 0 || p.y >= m.height || p.y < 0 {
+		return block{}, true
+	}
+
 	b, ok := m.blocks[p]
 	if b.color == "" {
 		return b, false
@@ -290,4 +295,29 @@ func (m model) SetShape(p position, s shape) {
 	for _, b := range bpos {
 		m.Set(b.Add(p), block{color: s.color})
 	}
+}
+
+// the position the shape will end up at if the
+// user doesn't input anything
+func (m model) FinalPosition(s shapeForm) position {
+	bpos := s.BlockPos()
+	rangeover := m.height - m.cursor.y
+
+	for y := range rangeover {
+		var canuse bool = true
+		for _, b := range bpos {
+			p := b.Add(position{y: m.height - y, x: m.cursor.x})
+
+			if _, exists := m.Get(p); exists {
+				canuse = false
+				break
+			}
+		}
+
+		if canuse {
+			return position{y: m.height - y, x: m.cursor.x}
+		}
+	}
+
+	return m.cursor
 }
