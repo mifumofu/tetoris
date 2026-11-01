@@ -45,6 +45,12 @@ func initialModel() model {
 
 		cursor: position{x: 5, y: 0},
 	}
+
+	// use set seed if requested
+	if seed != 0 {
+		m.seed = seed
+	}
+
 	m.rand = rand.New(rand.NewSource(m.seed))
 	m.active = m.NewShape()
 	m.help.ShowAll = true

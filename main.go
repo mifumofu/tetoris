@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"maps"
 	"os"
@@ -14,7 +15,12 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
+var seed int64
+
 func main() {
+	flag.Int64Var(&seed, "seed", 0, "Change the seed of a game")
+	flag.Parse()
+
 	p := tea.NewProgram(initialModel())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
