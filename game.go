@@ -335,23 +335,26 @@ func (m model) SetShape(p position, s shape) {
 // user doesn't input anything
 func (m model) FinalPosition(s shapeForm) position {
 	bpos := s.BlockPos()
-	rangeover := m.height - m.cursor.y
+	rangeover := m.height - m.cursor.y - len(m.active.form) + 1
+	var prev position
 
 	for y := range rangeover {
-		var canuse bool = true
+		var canuse bool = false
 		for _, b := range bpos {
-			p := b.Add(position{y: m.height - y, x: m.cursor.x})
+			p := b.Add(position{y: m.cursor.y + y, x: m.cursor.x})
 
 			if _, exists := m.Get(p); exists {
-				canuse = false
+				canuse = true
 				break
 			}
 		}
 
 		if canuse {
-			return position{y: m.height - y, x: m.cursor.x}
+			return prev
 		}
+
+		prev = position{y: m.cursor.y + y, x: m.cursor.x}
 	}
 
-	return m.cursor
+	return prev
 }
