@@ -11,7 +11,7 @@ import (
 type model struct {
 	keys    keyMap
 	help    help.Model
-	lastKey string
+	actions []position // list of all moves made
 
 	blockChar string
 	blocks    map[position]block
@@ -31,7 +31,7 @@ func initialModel() model {
 		blocks:    make(map[position]block),
 
 		width:  13,
-		height: 30,
+		height: 25,
 
 		cursor: position{x: 5, y: 0},
 		active: NewShape(),
@@ -77,6 +77,7 @@ func (m *model) Move(d position) {
 		return
 	}
 
+	(*m).actions = append((*m).actions, d)
 	(*m).cursor.y += d.y
 	(*m).cursor.x += d.x
 }

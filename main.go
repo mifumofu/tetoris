@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"maps"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -58,20 +59,16 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch {
 		case key.Matches(msg, m.keys.Up):
-			m.lastKey = "↑"
 			m.active.form = m.active.form.Rotate()
 
 		case key.Matches(msg, m.keys.Down):
-			m.lastKey = "↓"
 			m.Move(position{y: 1})
 
 		case key.Matches(msg, m.keys.Left):
 			m.Move(position{x: -1})
-			m.lastKey = "←"
 
 		case key.Matches(msg, m.keys.Right):
 			m.Move(position{x: 1})
-			m.lastKey = "→"
 
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
@@ -141,13 +138,7 @@ func (m model) View() tea.View {
 		Render(lipgloss.JoinHorizontal(
 			lipgloss.Left,
 
-			// Left Pane
-			lipgloss.JoinVertical(
-				lipgloss.Top,
-				"tetoris\n",
-				m.help.View(m.keys),
-			),
-
+			m.infoView(),
 			gv,
 		))
 	v := tea.NewView(layout)
@@ -179,5 +170,54 @@ func gameView(m model) string {
 			}
 		}
 	}
+	return b.String()
+}
+
+func (m model) infoView() string {
+	var b strings.Builder
+
+	b.WriteString("tetoris\n\n")
+
+	// Recent Actions
+	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Recent actions"))
+	b.WriteRune('\n')
+	b.WriteString(lipgloss.NewStyle().Bold(false).Render(recentActions(m.actions)))
+
+	// Keybinds
+	b.WriteRune('\n')
+	b.WriteRune('\n')
+	b.WriteString(m.help.View(m.keys))
+	return b.String()
+}
+
+// returns a string that lists recent actions taken
+func recentActions(dd []position) string {
+	slices.Reverse(dd)
+	length := 10
+	var keys []position // include
+
+	if len(dd) < length {
+		keys = dd
+	} else {
+		keys = dd[:length-1]
+	}
+
+	// render keys
+	var b strings.Builder
+	for _, k := range keys {
+		if k.x > 0 { // right
+			b.WriteString("→")
+
+		} else if k.x < 0 { // left
+			b.WriteString("←")
+
+		} else if k.y > 0 { // down
+			b.WriteString("↓")
+
+		} else if k.y < 0 { // up
+			b.WriteString("↑")
+		}
+	}
+
 	return b.String()
 }
