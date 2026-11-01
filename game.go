@@ -3,10 +3,16 @@ package main
 import (
 	"math/rand"
 	"slices"
+
+	"charm.land/bubbles/v2/help"
 )
 
 // model and helper functions
 type model struct {
+	keys    keyMap
+	help    help.Model
+	lastKey string
+
 	blockChar string
 	blocks    map[position]block
 	width     int
@@ -17,16 +23,21 @@ type model struct {
 }
 
 func initialModel() model {
-	return model{
+	m := model{
+		keys: keys,
+		help: help.New(),
+
 		blockChar: "  ",
 		blocks:    make(map[position]block),
 
-		width:  30,
-		height: 40,
+		width:  13,
+		height: 30,
 
 		cursor: position{x: 5, y: 0},
 		active: NewShape(),
 	}
+	m.help.ShowAll = true
+	return m
 }
 
 func (m model) Get(p position) (block, bool) {
@@ -44,7 +55,7 @@ func (m *model) Set(p position, b block) {
 
 func (m *model) ResetCursor() {
 	m.SetShape(m.cursor, m.active)
-	m.cursor = position{x: 0, y: 0}
+	m.cursor = position{x: 1, y: 0}
 	m.active = NewShape()
 }
 

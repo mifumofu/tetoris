@@ -7,7 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 )
 
 func main() {
@@ -54,28 +56,25 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Is it a key press?
 	case tea.KeyPressMsg:
 
-		// Cool, what was the actual key pressed?
-		switch msg.String() {
-
-		// These keys should exit the program.
-		case "ctrl+c", "q":
-			return m, tea.Quit
-
-		// left
-		case "h", "left":
-			m.Move(position{x: -1})
-
-		// right
-		case "l", "right":
-			m.Move(position{x: 1})
-
-		// up
-		case "k", "up":
+		switch {
+		case key.Matches(msg, m.keys.Up):
+			m.lastKey = "↑"
 			m.active.form = m.active.form.Rotate()
 
-		// down
-		case "j", "down":
+		case key.Matches(msg, m.keys.Down):
+			m.lastKey = "↓"
 			m.Move(position{y: 1})
+
+		case key.Matches(msg, m.keys.Left):
+			m.Move(position{x: -1})
+			m.lastKey = "←"
+
+		case key.Matches(msg, m.keys.Right):
+			m.Move(position{x: 1})
+			m.lastKey = "→"
+
+		case key.Matches(msg, m.keys.Quit):
+			return m, tea.Quit
 		}
 	}
 
@@ -84,9 +83,74 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+// keyMap defines a set of keybindings. To work for help it must satisfy
+// key.Map. It could also very easily be a map[string]key.Binding.
+type keyMap struct {
+	Up    key.Binding
+	Down  key.Binding
+	Left  key.Binding
+	Right key.Binding
+	Help  key.Binding
+	Quit  key.Binding
+}
+
+// we don't use this since we can show all keys vertically, so return nothing
+func (k keyMap) ShortHelp() []key.Binding {
+	return []key.Binding{}
+}
+
+// Show all keys to user
+func (k keyMap) FullHelp() [][]key.Binding {
+	return [][]key.Binding{
+		{k.Up, k.Down, k.Left, k.Right, k.Quit}, // first column
+	}
+}
+
+var keys = keyMap{
+	Up: key.NewBinding(
+		key.WithKeys("up", "k", "w"),
+		key.WithHelp("↑/k/w", "rotate"),
+	),
+	Down: key.NewBinding(
+		key.WithKeys("down", "j", "s"),
+		key.WithHelp("↓/j/s", "move down"),
+	),
+	Left: key.NewBinding(
+		key.WithKeys("left", "h", "a"),
+		key.WithHelp("←/h/a", "move left"),
+	),
+	Right: key.NewBinding(
+		key.WithKeys("right", "l", "d"),
+		key.WithHelp("→/l/d", "move right"),
+	),
+	Quit: key.NewBinding(
+		key.WithKeys("q", "esc", "ctrl+c"),
+		key.WithHelp("q", "quit"),
+	),
+}
+
 func (m model) View() tea.View {
-	b := gameView(m)
-	v := tea.NewView(b)
+	gv := lipgloss.NewStyle().
+		Border(lipgloss.DoubleBorder()).
+		MarginLeft(5).
+		Render(gameView(m))
+
+	// join final layout together
+	layout := lipgloss.NewStyle().
+		Align(lipgloss.Center).
+		Render(lipgloss.JoinHorizontal(
+			lipgloss.Left,
+
+			// Left Pane
+			lipgloss.JoinVertical(
+				lipgloss.Top,
+				"tetoris\n",
+				m.help.View(m.keys),
+			),
+
+			gv,
+		))
+	v := tea.NewView(layout)
 	v.AltScreen = true
 
 	return v
