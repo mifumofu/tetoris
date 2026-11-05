@@ -157,7 +157,7 @@ func (m model) CanClearRow(y int) bool {
 }
 
 // clears a row, does not check if it is completely full
-func (m model) ClearRow(y int) {
+func (m *model) ClearRow(y int) {
 	rangeover := m.height - (m.height - y)
 	for py := range rangeover {
 		if rangeover-py == m.height {
@@ -175,7 +175,7 @@ func (m model) ClearRow(y int) {
 		}
 	}
 
-	m.score += 50
+	(*m).score += 50
 }
 
 // position
