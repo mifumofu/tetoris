@@ -10,6 +10,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mifumofu/tetoris/game"
+	"github.com/mifumofu/tetoris/internal/keys"
 )
 
 type model struct {
@@ -17,7 +18,6 @@ type model struct {
 
 	termHeight int
 	termWidth  int
-	keys       keyMap
 	help       help.Model
 }
 
@@ -40,7 +40,6 @@ func main() {
 
 	m := model{
 		game: game.NewGame(seed),
-		keys: keys,
 		help: help.New(),
 	}
 
@@ -66,7 +65,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Is it a key press?
 	case tea.KeyPressMsg:
 		switch {
-		case key.Matches(msg, m.keys.Quit):
+		case key.Matches(msg, keys.KeyMap.Quit):
 			return m, tea.Quit
 
 		default:
