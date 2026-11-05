@@ -3,19 +3,23 @@ package main
 import (
 	"flag"
 	"fmt"
-	"maps"
 	"os"
-	"slices"
-	"strconv"
-	"strings"
-	"time"
 
+	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mifumofu/tetoris/game"
 )
 
-var seed int64
+type model struct {
+	game game.Game
+
+	termHeight int
+	termWidth  int
+	keys       keyMap
+	help       help.Model
+}
 
 func main() {
 	if e := os.Getenv("DEBUG"); e != "" {
@@ -26,49 +30,34 @@ func main() {
 		defer f.Close()
 	}
 
-	flag.Int64Var(&seed, "seed", 0, "Change the seed of a game")
+	seed := flag.Int64("seed", 0, "Change the seed of a game")
 	flag.Parse()
 
-	p := tea.NewProgram(initialModel())
+	// wipe variable if set to default value
+	if *seed == 0 {
+		seed = nil
+	}
+
+	m := model{
+		game: game.NewGame(seed),
+		keys: keys,
+		help: help.New(),
+	}
+
+	p := tea.NewProgram(m)
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
 	}
 }
 
-type color string
-
-var colorReset color = "\x1b[0m"
-var colorBgBlack color = "\x1b[40m"
-var colors = []color{
-	"\x1b[41m", // Red
-	"\x1b[42m", // Green
-	"\x1b[43m", // Yellow
-	"\x1b[44m", // Blue
-	"\x1b[45m", // Purple
-	"\x1b[46m", // Cyan
-	"\x1b[47m", // White
-}
-
 func (m model) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now, please."
-	return doTick()
-}
-
-type tickMsg time.Time
-
-func doTick() tea.Cmd {
-	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
-		return tickMsg(t)
-	})
+	return nil
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-
-	case tickMsg:
-		m.Move(position{y: 1})
-		return m, doTick()
 
 	case tea.WindowSizeMsg:
 		m.termHeight = msg.Height
@@ -76,47 +65,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// Is it a key press?
 	case tea.KeyPressMsg:
-
 		switch {
-		case key.Matches(msg, m.keys.Up):
-			if m.state == stateRunning {
-				rot, canrotate := m.active.form.Rotate(), true
-				// don't allow the player to rotate the block into a wall
-				for _, b := range rot.BlockPos() {
-					if b.Add(m.cursor).x >= m.width || b.Add(m.cursor).y >= m.height {
-						canrotate = false
-						break
-					}
-				}
-
-				if canrotate {
-					m.active.form = rot
-				}
-			}
-
-		case key.Matches(msg, m.keys.Down):
-			m.Move(position{y: 1})
-
-		case key.Matches(msg, m.keys.Left):
-			m.Move(position{x: -1})
-
-		case key.Matches(msg, m.keys.Right):
-			m.Move(position{x: 1})
-
-		case key.Matches(msg, m.keys.Instadown):
-			m.cursor = m.FinalPosition(m.active.form)
-			m.Move(position{y: 1})
-
-		case key.Matches(msg, m.keys.Pause):
-			if m.state == stateRunning {
-				m.state = statePaused
-			} else if m.state == statePaused {
-				m.state = stateRunning
-			}
-
 		case key.Matches(msg, m.keys.Quit):
 			return m, tea.Quit
+
+		default:
+			g, mg := m.game.Update(msg)
+			m.game = g.(game.Game)
+			return m, mg
 		}
+
+	default:
+		g, mg := m.game.Update(msg)
+		m.game = g.(game.Game)
+		return m, mg
 	}
 
 	// Return the updated model to the Bubble Tea runtime for processing.
@@ -124,203 +86,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-// keyMap defines a set of keybindings. To work for help it must satisfy
-// key.Map. It could also very easily be a map[string]key.Binding.
-type keyMap struct {
-	Pause     key.Binding
-	Up        key.Binding
-	Down      key.Binding
-	Left      key.Binding
-	Right     key.Binding
-	Instadown key.Binding
-	Help      key.Binding
-	Quit      key.Binding
-}
-
-// we don't use this since we can show all keys vertically, so return nothing
-func (k keyMap) ShortHelp() []key.Binding {
-	return []key.Binding{}
-}
-
-// Show all keys to user
-func (k keyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{k.Up, k.Down, k.Left, k.Right, k.Instadown, k.Pause, k.Quit}, // first column
-	}
-}
-
-var keys = keyMap{
-	Up: key.NewBinding(
-		key.WithKeys("up", "k", "w"),
-		key.WithHelp("↑/k/w", "rotate"),
-	),
-	Down: key.NewBinding(
-		key.WithKeys("down", "j", "s"),
-		key.WithHelp("↓/j/s", "move down"),
-	),
-	Left: key.NewBinding(
-		key.WithKeys("left", "h", "a"),
-		key.WithHelp("←/h/a", "move left"),
-	),
-	Right: key.NewBinding(
-		key.WithKeys("right", "l", "d"),
-		key.WithHelp("→/l/d", "move right"),
-	),
-	Instadown: key.NewBinding(
-		key.WithKeys("space"),
-		key.WithHelp("space", "instadown"),
-	),
-	Pause: key.NewBinding(
-		key.WithKeys("p"),
-		key.WithHelp("p", "(un)pause"),
-	),
-	Quit: key.NewBinding(
-		key.WithKeys("q", "esc", "ctrl+c"),
-		key.WithHelp("q", "quit"),
-	),
-}
-
 func (m model) View() tea.View {
-	gv := lipgloss.NewStyle().Border(lipgloss.DoubleBorder()).MarginLeft(1)
-
-	if m.state == statePaused {
-		gv = gv.BorderForeground(lipgloss.Red)
-	} else if m.state == stateEnd {
-		gv = gv.BorderForeground(lipgloss.Yellow)
-	}
-
-	// join final layout together
 	layout := lipgloss.NewStyle().
 		AlignHorizontal(lipgloss.Center).
-		Render(lipgloss.JoinHorizontal(
-			lipgloss.Left,
-
-			m.infoView(),
-
-			gv.Render(gameView(m)),
-		))
+		Render(m.game.View().Content)
 
 	v := tea.NewView(lipgloss.Place(m.termWidth, m.termHeight, lipgloss.Center, lipgloss.Center, layout))
 	v.AltScreen = true
 
 	return v
-}
-
-func gameView(m model) string {
-	blocks := maps.Clone(m.blocks)
-
-	// draw hint of final block position
-	for w := range m.width {
-		blocks[position{x: w, y: m.killLine}] = block{character: '-'}
-	}
-
-	// draw hint of final block position
-	c := m.FinalPosition(m.active.form)
-	for _, b := range m.active.form.BlockPos() {
-		blocks[c.Add(b)] = block{color: colorBgBlack, character: '░'}
-	}
-
-	// draw cursor blocks
-	for _, b := range m.active.form.BlockPos() {
-		blocks[m.cursor.Add(b)] = block{color: m.active.color, character: ' '}
-	}
-
-	var b strings.Builder
-	for h := range m.height {
-		if h > 0 { // skips a blank space at the top
-			b.WriteString("\n")
-		}
-		for w := range m.width {
-			if bk, ok := blocks[position{y: h, x: w}]; ok {
-				b.WriteString(string(bk.color))
-				b.WriteRune(bk.character)
-				b.WriteRune(bk.character)
-				b.WriteString(string(colorReset))
-			} else {
-				b.WriteString("  ")
-			}
-		}
-	}
-	return b.String()
-}
-
-const tetorisLogo string = `   ▀▀▀▀   █
-  ▀▀▀█▀▀  █▀▄▄
-   ▄▀     █   ▀ 
-         
-  █   █   ▀▀▀▀▀█
-  ▀   █     ▄▄▀ 
-   ▄▄▀    ▄▀  ▀▄
-  
-     tetoris
-
-`
-
-func (m model) infoView() string {
-	var b strings.Builder
-
-	b.WriteString(tetorisLogo)
-
-	if m.state == stateRunning {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Green).Render("▶ Running"))
-	} else if m.state == statePaused {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Red).Render("⏸ Paused"))
-	} else if m.state == stateEnd {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Yellow).Render("⏹ Game ended"))
-	}
-	b.WriteString("\n\n")
-
-	// Score
-	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Score"))
-	b.WriteRune('\n')
-	b.WriteString(strconv.Itoa(int(m.score)))
-	b.WriteString("\n\n")
-
-	// Seed
-	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Seed"))
-	b.WriteRune('\n')
-	b.WriteString(strconv.Itoa(int(m.seed)))
-	b.WriteString("\n\n")
-
-	// Recent Actions
-	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Recent actions"))
-	b.WriteRune('\n')
-	b.WriteString(recentActions(m.actions))
-
-	// Keybinds
-	b.WriteString("\n\n")
-	b.WriteString(m.help.View(m.keys))
-	return b.String()
-}
-
-// returns a string that lists recent actions taken
-func recentActions(dd []position) string {
-	slices.Reverse(dd)
-	length := 10
-	var keys []position // include
-
-	if len(dd) < length {
-		keys = dd
-	} else {
-		keys = dd[:length-1]
-	}
-
-	// render keys
-	var b strings.Builder
-	for _, k := range keys {
-		if k.x > 0 { // right
-			b.WriteString("→")
-
-		} else if k.x < 0 { // left
-			b.WriteString("←")
-
-		} else if k.y > 0 { // down
-			b.WriteString("↓")
-
-		} else if k.y < 0 { // up
-			b.WriteString("↑")
-		}
-	}
-
-	return b.String()
 }
