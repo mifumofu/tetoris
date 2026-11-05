@@ -1,7 +1,7 @@
 package game
 
 import (
-	"fmt"
+	"log"
 	"math/rand"
 	"time"
 
@@ -62,7 +62,7 @@ func (m Game) Init() tea.Cmd {
 type tickMsg time.Time
 
 func doTick() tea.Cmd {
-	fmt.Println("tick")
+	log.Println("got tick for falling block!")
 	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})

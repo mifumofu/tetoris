@@ -52,7 +52,7 @@ func main() {
 
 func (m model) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now, please."
-	return nil
+	return m.game.Init()
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
