@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -47,6 +48,8 @@ func main() {
 			panic(err)
 		}
 		defer f.Close()
+	} else {
+		log.SetOutput(io.Discard)
 	}
 
 	m := model{
