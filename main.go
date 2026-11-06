@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -27,9 +26,12 @@ type model struct {
 
 type state int8
 
+var newgame *game.Game // too lazy rn
+
 const (
 	stateMenu state = iota
 	stateGame
+	stateCustomGame
 )
 
 func changeState(s state) tea.Cmd {
@@ -47,16 +49,8 @@ func main() {
 		defer f.Close()
 	}
 
-	seed := flag.Int64("seed", 0, "Change the seed of a game")
-	flag.Parse()
-
-	// wipe variable if set to default value
-	if *seed == 0 {
-		seed = nil
-	}
-
 	m := model{
-		game: game.NewGame(seed),
+		game: game.NewGame(),
 		menu: newMenu(),
 		help: help.New(),
 	}
@@ -89,9 +83,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case stateMenu:
 			m.active = m.menu
 			return m, m.menu.Init()
+
 		case stateGame:
+			if newgame != nil {
+				m.game = *newgame
+			}
 			m.active = m.game
 			return m, m.game.Init()
+
+		case stateCustomGame:
+			m.active = newCustomGame()
+			return m, m.active.Init()
 		}
 	// Is it a key press?
 	case tea.KeyPressMsg:

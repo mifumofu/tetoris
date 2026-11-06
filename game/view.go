@@ -16,7 +16,7 @@ func (m Game) View() tea.View {
 
 	s := gameView(m)
 	if m.state == statePaused {
-		s = lipgloss.Place(m.width*2, m.height, lipgloss.Center, lipgloss.Center, "Game Paused")
+		s = lipgloss.Place(m.Width*2, m.Height, lipgloss.Center, lipgloss.Center, "Game Paused")
 	}
 
 	if m.state == statePaused {
@@ -42,7 +42,7 @@ func gameView(m Game) string {
 	blocks := maps.Clone(m.blocks)
 
 	// draw hint of final block position
-	for w := range m.width {
+	for w := range m.Width {
 		blocks[position{x: w, y: m.killLine}] = block{character: '-'}
 	}
 
@@ -58,11 +58,11 @@ func gameView(m Game) string {
 	}
 
 	var b strings.Builder
-	for h := range m.height {
+	for h := range m.Height {
 		if h > 0 { // skips a blank space at the top
 			b.WriteString("\n")
 		}
-		for w := range m.width {
+		for w := range m.Width {
 			if bk, ok := blocks[position{y: h, x: w}]; ok {
 				b.WriteString(string(bk.color))
 				b.WriteRune(bk.character)
@@ -105,7 +105,7 @@ func (m Game) infoView() string {
 	// Seed
 	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Seed"))
 	b.WriteRune('\n')
-	b.WriteString(strconv.Itoa(int(m.seed)))
+	b.WriteString(strconv.Itoa(int(m.Seed)))
 	b.WriteString("\n\n")
 
 	// Recent Actions

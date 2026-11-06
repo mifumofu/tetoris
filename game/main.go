@@ -17,38 +17,64 @@ type Game struct {
 	blocks      map[position]block
 
 	rand *rand.Rand
-	seed int64
+	Seed int64
 
 	killLine int // y of kill line
-	width    int
-	height   int
+	Width    int
+	Height   int
 
 	cursor position
 	active shape
 }
 
-func NewGame(seed *int64) Game {
+func NewGame(opts ...gameOption) Game {
 	m := Game{
 		state: stateRunning,
-		seed:  rand.Int63(),
+		Seed:  rand.Int63(),
 
 		blocks: make(map[position]block),
 
 		killLine: 2,
-		width:    13,
-		height:   25,
+		Width:    13,
+		Height:   25,
 
 		cursor: position{x: 5, y: 0},
 	}
 
-	// use set seed if requested
-	if seed != nil {
-		m.seed = *seed
+	// apply options
+	for _, opt := range opts {
+		opt(&m)
 	}
 
-	m.rand = rand.New(rand.NewSource(m.seed))
+	m.rand = rand.New(rand.NewSource(m.Seed))
 	m.active = m.NewShape()
+
 	return m
+}
+
+//
+// options
+//
+
+type gameOption func(*Game)
+
+func WithSeed(w int) gameOption {
+	return func(s *Game) {
+		s.Seed = int64(w)
+		s.rand = rand.New(rand.NewSource(s.Seed))
+	}
+}
+
+func WithWidth(w int) gameOption {
+	return func(s *Game) {
+		s.Width = w
+	}
+}
+
+func WithHeight(h int) gameOption {
+	return func(s *Game) {
+		s.Height = h
+	}
 }
 
 //

@@ -145,7 +145,7 @@ func (m Game) SetShape(p position, s shape) {
 // user doesn't input anything
 func (m Game) FinalPosition(s shapeForm) position {
 	bpos := s.BlockPos()
-	rangeover := m.height - m.cursor.y - len(m.active.form) + 1
+	rangeover := m.Height - m.cursor.y - len(m.active.form) + 1
 	var prev position
 
 	for y := range rangeover {

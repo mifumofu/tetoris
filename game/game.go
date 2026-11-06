@@ -14,7 +14,7 @@ const (
 
 func (m Game) Get(p position) (block, bool) {
 	// block does not exist if its out of bounds
-	if p.x >= m.width || p.x < 0 || p.y >= m.height || p.y < 0 {
+	if p.x >= m.Width || p.x < 0 || p.y >= m.Height || p.y < 0 {
 		return block{}, true
 	}
 
@@ -26,7 +26,7 @@ func (m Game) Get(p position) (block, bool) {
 }
 
 func (m *Game) Set(p position, b block) {
-	p.In(m.width, m.height)
+	p.In(m.Width, m.Height)
 	m.blocks[p] = b
 }
 
@@ -34,7 +34,7 @@ func (m *Game) Set(p position, b block) {
 // resets the cursor with a new shape
 func (m *Game) ResetCursor() {
 	m.SetShape(m.cursor, m.active)
-	m.cursor = position{x: m.width/2 - 1, y: 0}
+	m.cursor = position{x: m.Width/2 - 1, y: 0}
 	m.active = m.NewShape()
 
 	if m.FinalPosition(m.active.form).y <= m.killLine {
@@ -79,10 +79,10 @@ func (m Game) CanMove(d position) bool {
 		if _, exists := m.Get(npos); exists {
 			return false
 
-		} else if npos.x < 0 || npos.x == m.width {
+		} else if npos.x < 0 || npos.x == m.Width {
 			return false
 
-		} else if npos.y < 0 || npos.y == m.height {
+		} else if npos.y < 0 || npos.y == m.Height {
 			return false
 		}
 	}
@@ -91,7 +91,7 @@ func (m Game) CanMove(d position) bool {
 
 // checks if a row can be cleared
 func (m Game) CanClearRow(y int) bool {
-	for px := range m.width {
+	for px := range m.Width {
 		pos := position{x: px, y: y}
 		b, exists := m.Get(pos)
 		_ = b
@@ -107,12 +107,12 @@ func (m Game) CanClearRow(y int) bool {
 
 // clears a row, does not check if it is completely full
 func (m *Game) ClearRow(y int) {
-	rangeover := m.height - (m.height - y)
+	rangeover := m.Height - (m.Height - y)
 	for py := range rangeover {
-		if rangeover-py == m.height {
+		if rangeover-py == m.Height {
 			continue
 		}
-		for px := range m.width {
+		for px := range m.Width {
 			pos := position{y: rangeover - py, x: px}
 			block, exists := m.Get(position{x: pos.x, y: pos.y - 1})
 

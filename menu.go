@@ -19,6 +19,7 @@ func newMenu() menu {
 	return menu{
 		items: []string{
 			"Play",
+			"Custom Game",
 			"Quit",
 		},
 	}
@@ -47,6 +48,10 @@ func (m menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.items[m.cursor] {
 			case "Play":
 				return m, changeState(stateGame)
+
+			case "Custom Game":
+				return m, changeState(stateCustomGame)
+
 			case "Quit":
 				return m, tea.Quit
 			}
