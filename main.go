@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 
 	"charm.land/bubbles/v2/help"
@@ -14,11 +15,27 @@ import (
 )
 
 type model struct {
-	game game.Game
+	game   game.Game
+	menu   menu
+	state  state
+	active tea.Model
 
 	termHeight int
 	termWidth  int
 	help       help.Model
+}
+
+type state int8
+
+const (
+	stateMenu state = iota
+	stateGame
+)
+
+func changeState(s state) tea.Cmd {
+	return func() tea.Msg {
+		return s
+	}
 }
 
 func main() {
@@ -40,8 +57,11 @@ func main() {
 
 	m := model{
 		game: game.NewGame(seed),
+		menu: newMenu(),
 		help: help.New(),
 	}
+
+	m.active = m.menu
 
 	p := tea.NewProgram(m)
 	if _, err := p.Run(); err != nil {
@@ -52,7 +72,7 @@ func main() {
 
 func (m model) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now, please."
-	return m.game.Init()
+	return nil
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -61,23 +81,35 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.termHeight = msg.Height
 		m.termWidth = msg.Width
+		log.Printf("changed window size to x%v y%v", m.termWidth, m.termHeight)
 
+	case state:
+		log.Println("changing state ", msg)
+		switch msg {
+		case stateMenu:
+			m.active = m.menu
+			return m, m.menu.Init()
+		case stateGame:
+			m.active = m.game
+			return m, m.game.Init()
+		}
 	// Is it a key press?
 	case tea.KeyPressMsg:
+		log.Println("press", msg)
 		switch {
 		case key.Matches(msg, keys.KeyMap.Quit):
 			return m, tea.Quit
 
 		default:
-			g, mg := m.game.Update(msg)
-			m.game = g.(game.Game)
-			return m, mg
+			var acmd tea.Cmd
+			m.active, acmd = m.active.Update(msg)
+			return m, acmd
 		}
 
 	default:
-		g, mg := m.game.Update(msg)
-		m.game = g.(game.Game)
-		return m, mg
+		var acmd tea.Cmd
+		m.active, acmd = m.active.Update(msg)
+		return m, acmd
 	}
 
 	// Return the updated model to the Bubble Tea runtime for processing.
@@ -88,7 +120,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() tea.View {
 	layout := lipgloss.NewStyle().
 		AlignHorizontal(lipgloss.Center).
-		Render(m.game.View().Content)
+		Render(m.active.View().Content)
 
 	v := tea.NewView(lipgloss.Place(m.termWidth, m.termHeight, lipgloss.Center, lipgloss.Center, layout))
 	v.AltScreen = true

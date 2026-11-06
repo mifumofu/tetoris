@@ -10,6 +10,7 @@ type keymap struct {
 	Down      key.Binding
 	Left      key.Binding
 	Right     key.Binding
+	Select    key.Binding
 	Instadown key.Binding
 	Help      key.Binding
 	Quit      key.Binding
@@ -43,6 +44,10 @@ var KeyMap = keymap{
 	Right: key.NewBinding(
 		key.WithKeys("right", "l", "d"),
 		key.WithHelp("→/l/d", "move right"),
+	),
+	Select: key.NewBinding(
+		key.WithKeys("enter"),
+		key.WithHelp("enter", "select"),
 	),
 	Instadown: key.NewBinding(
 		key.WithKeys("space"),

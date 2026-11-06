@@ -4,6 +4,7 @@ type Color string
 
 var ColorReset Color = "\x1b[0m"
 var ColorBgBlack Color = "\x1b[40m"
+var ColorAccent Color = "\x1b[0;33m"
 var Colors = []Color{
 	"\x1b[41m", // Red
 	"\x1b[42m", // Green
