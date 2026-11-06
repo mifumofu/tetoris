@@ -91,6 +91,12 @@ func (m Game) infoView() string {
 	b.WriteString(strconv.Itoa(int(m.score)))
 	b.WriteString("\n\n")
 
+	// Rows Cleared
+	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Rows Cleared"))
+	b.WriteRune('\n')
+	b.WriteString(strconv.Itoa(int(m.rowsCleared)))
+	b.WriteString("\n\n")
+
 	// Seed
 	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Seed"))
 	b.WriteRune('\n')

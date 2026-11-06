@@ -16,7 +16,7 @@ func (m Game) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tickMsg:
 		m.Move(position{y: 1})
-		return m, doTick()
+		return m, m.doTick()
 
 	// Is it a key press?
 	case tea.KeyPressMsg:

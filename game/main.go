@@ -10,10 +10,11 @@ import (
 
 // Game and helper functions
 type Game struct {
-	score   int
-	state   state
-	actions []position // list of all moves made
-	blocks  map[position]block
+	score       int
+	rowsCleared int
+	state       state
+	actions     []position // list of all moves made
+	blocks      map[position]block
 
 	rand *rand.Rand
 	seed int64
@@ -56,14 +57,16 @@ func NewGame(seed *int64) Game {
 
 func (m Game) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now, please."
-	return doTick()
+	return m.doTick()
 }
 
 type tickMsg time.Time
 
-func doTick() tea.Cmd {
+func (m Game) doTick() tea.Cmd {
 	log.Println("got tick for falling block!")
-	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
+	nextTick := max(time.Second-(time.Millisecond*20*time.Duration(m.rowsCleared)), 150*time.Millisecond)
+	log.Printf("making block fall! next in %v", nextTick)
+	return tea.Tick(nextTick, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
 }

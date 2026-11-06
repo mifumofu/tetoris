@@ -125,6 +125,7 @@ func (m *Game) ClearRow(y int) {
 	}
 
 	(*m).score += 50
+	(*m).rowsCleared += 1
 }
 
 // position
