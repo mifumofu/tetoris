@@ -14,6 +14,11 @@ import (
 func (m Game) View() tea.View {
 	gv := lipgloss.NewStyle().Border(lipgloss.DoubleBorder()).MarginLeft(1)
 
+	s := gameView(m)
+	if m.state == statePaused {
+		s = lipgloss.Place(m.width*2, m.height, lipgloss.Center, lipgloss.Center, "Game Paused")
+	}
+
 	if m.state == statePaused {
 		gv = gv.BorderForeground(lipgloss.Red)
 	} else if m.state == stateEnd {
@@ -24,7 +29,7 @@ func (m Game) View() tea.View {
 	layout := lipgloss.JoinHorizontal(
 		lipgloss.Left,
 		m.infoView(),
-		gv.Render(gameView(m)),
+		gv.Render(s),
 	)
 
 	v := tea.NewView(layout)
