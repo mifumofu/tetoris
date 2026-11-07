@@ -41,7 +41,7 @@ func (m menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case key.Matches(msg, keys.KeyMap.Down):
-			if len(m.items)-1 >= m.cursor {
+			if len(m.items)-1 > m.cursor {
 				m.cursor += 1
 			}
 
