@@ -60,9 +60,9 @@ func NewGame(opts ...gameOption) Game {
 
 type gameOption func(*Game)
 
-func WithSeed(w int) gameOption {
+func WithSeed(w int64) gameOption {
 	return func(s *Game) {
-		s.Seed = int64(w)
+		s.Seed = w
 		s.rand = rand.New(rand.NewSource(s.Seed))
 	}
 }

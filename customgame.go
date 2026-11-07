@@ -119,7 +119,7 @@ func (m customGame) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	newgame = new(game.NewGame(
-		game.WithSeed(seed),
+		game.WithSeed(int64(seed)),
 		game.WithWidth(w),
 		game.WithHeight(h),
 		game.WithBlocks(blocks),

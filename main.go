@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 
 	"charm.land/bubbles/v2/help"
@@ -52,7 +54,7 @@ func main() {
 	}
 
 	m := model{
-		game:   game.NewGame(),
+		game:   parseFlags(),
 		active: newMenu(),
 		help:   help.New(),
 	}
@@ -62,6 +64,23 @@ func main() {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
 	}
+}
+
+func parseFlags() game.Game {
+	seed := flag.Int64("seed", 0, "Seed of game")
+	width := flag.Int("width", 13, "Width of game")
+	height := flag.Int("widthheight", 25, "Height of game")
+	flag.Parse()
+
+	if *seed == 0 {
+		seed = new(rand.Int63())
+	}
+
+	return game.NewGame(
+		game.WithWidth(*width),
+		game.WithHeight(*height),
+		game.WithSeed(*seed),
+	)
 }
 
 func (m model) Init() tea.Cmd {
