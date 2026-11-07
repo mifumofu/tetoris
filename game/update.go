@@ -27,7 +27,9 @@ func (m Game) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				rot, canrotate := m.active.form.Rotate(), true
 				// don't allow the player to rotate the block into a wall
 				for _, b := range rot.BlockPos() {
-					if b.Add(m.cursor).x >= m.Width || b.Add(m.cursor).y >= m.Height {
+					_, exists := m.Get(b.Add(m.cursor))
+					if b.Add(m.cursor).x >= m.Width || b.Add(m.cursor).y >= m.Height || exists {
+						// prevent rotating into blocks
 						canrotate = false
 						break
 					}
