@@ -16,7 +16,6 @@ import (
 
 type model struct {
 	game   game.Game
-	menu   menu
 	state  state
 	active tea.Model
 
@@ -30,7 +29,7 @@ type state int8
 var newgame *game.Game // too lazy rn
 
 const (
-	stateMenu state = iota
+	stateOverlay state = iota
 	stateGame
 	stateCustomGame
 )
@@ -53,12 +52,10 @@ func main() {
 	}
 
 	m := model{
-		game: game.NewGame(),
-		menu: newMenu(),
-		help: help.New(),
+		game:   game.NewGame(),
+		active: newMenu(),
+		help:   help.New(),
 	}
-
-	m.active = m.menu
 
 	p := tea.NewProgram(m)
 	if _, err := p.Run(); err != nil {
@@ -83,10 +80,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case state:
 		log.Println("changing state ", msg)
 		switch msg {
-		case stateMenu:
-			m.active = m.menu
-			m.state = stateMenu
-			return m, m.menu.Init()
+		case stateOverlay:
+			m.active = newMenu()
+			m.state = stateOverlay
+			return m, m.active.Init()
 
 		case stateGame:
 			if newgame != nil {
@@ -129,7 +126,7 @@ func (m model) View() tea.View {
 	content := m.active.View().Content
 
 	// place menu over game
-	if m.state == stateMenu {
+	if m.state == stateOverlay {
 		content = m.game.View().Content
 	}
 
@@ -143,7 +140,7 @@ func (m model) View() tea.View {
 			Render(content),
 	)
 
-	if m.state == stateMenu {
+	if m.state == stateOverlay {
 		comp := lipgloss.NewCompositor(lipgloss.NewLayer(layout))
 
 		// overlay active layer
