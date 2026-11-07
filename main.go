@@ -85,6 +85,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg {
 		case stateMenu:
 			m.active = m.menu
+			m.state = stateMenu
 			return m, m.menu.Init()
 
 		case stateGame:
@@ -92,10 +93,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.game = *newgame
 			}
 			m.active = m.game
+			m.state = stateGame
 			return m, m.game.Init()
 
 		case stateCustomGame:
 			m.active = newCustomGame()
+			m.state = stateCustomGame
 			return m, m.active.Init()
 		}
 	// Is it a key press?
@@ -123,11 +126,36 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) View() tea.View {
-	layout := lipgloss.NewStyle().
-		AlignHorizontal(lipgloss.Center).
-		Render(m.active.View().Content)
+	content := m.active.View().Content
 
-	v := tea.NewView(lipgloss.Place(m.termWidth, m.termHeight, lipgloss.Center, lipgloss.Center, layout))
+	// place menu over game
+	if m.state == stateMenu {
+		content = m.game.View().Content
+	}
+
+	layout := lipgloss.Place(
+		m.termWidth,
+		m.termHeight,
+		lipgloss.Center,
+		lipgloss.Center,
+		lipgloss.NewStyle().
+			AlignHorizontal(lipgloss.Center).
+			Render(content),
+	)
+
+	if m.state == stateMenu {
+		comp := lipgloss.NewCompositor(lipgloss.NewLayer(layout))
+
+		// overlay active layer
+		lm := lipgloss.NewLayer(m.active.View().Content)
+		posx := m.termWidth/2 - lm.Width()/2
+		posy := m.termHeight/2 - lm.Height()/2
+
+		comp = comp.AddLayers(lm.X(posx).Y(posy))
+		layout = comp.Render()
+	}
+
+	v := tea.NewView(layout)
 	v.AltScreen = true
 
 	return v

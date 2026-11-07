@@ -1,11 +1,13 @@
 package main
 
 import (
+	"image/color"
 	"log"
 	"strings"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/mifumofu/tetoris/internal/keys"
 	"github.com/mifumofu/tetoris/internal/txt"
 )
@@ -79,5 +81,12 @@ func (m menu) View() tea.View {
 		b.WriteRune('\n')
 	}
 
-	return tea.NewView(b.String())
+	return tea.NewView(
+		lipgloss.NewStyle().
+			Background(color.Black).
+			Margin(2).
+			MarginBackground(color.Black).
+			Padding(3).
+			Render(b.String()),
+	)
 }
