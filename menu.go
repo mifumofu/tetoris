@@ -66,8 +66,6 @@ func (m menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m menu) View() tea.View {
 	var b strings.Builder
 
-	b.WriteString(txt.Logo)
-
 	for pos, i := range m.items {
 		if pos == m.cursor {
 			b.WriteString(string(txt.ColorAccent))
@@ -87,6 +85,8 @@ func (m menu) View() tea.View {
 			Margin(2).
 			MarginBackground(color.Black).
 			Padding(3).
-			Render(b.String()),
+			Render(
+				lipgloss.JoinHorizontal(lipgloss.Left, txt.Logo, b.String()),
+			),
 	)
 }
