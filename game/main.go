@@ -13,7 +13,7 @@ type Game struct {
 	score       int
 	rowsCleared int
 	state       state
-	actions     []position // list of all moves made
+	Actions     []position // list of all moves made
 	blocks      map[position]block
 
 	rand *rand.Rand
@@ -22,9 +22,10 @@ type Game struct {
 	killLine int // y of kill line
 	Width    int
 	Height   int
+	Shapes   []ShapeForm
 
 	cursor position
-	active shape
+	active Shape
 }
 
 func NewGame(opts ...gameOption) Game {
@@ -37,6 +38,7 @@ func NewGame(opts ...gameOption) Game {
 		killLine: 2,
 		Width:    13,
 		Height:   25,
+		Shapes:   shapesForms,
 
 		cursor: position{x: 5, y: 0},
 	}
@@ -74,6 +76,12 @@ func WithWidth(w int) gameOption {
 func WithHeight(h int) gameOption {
 	return func(s *Game) {
 		s.Height = h
+	}
+}
+
+func WithBlocks(sf []ShapeForm) gameOption {
+	return func(s *Game) {
+		s.Shapes = sf
 	}
 }
 

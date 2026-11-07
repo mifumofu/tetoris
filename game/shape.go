@@ -8,28 +8,28 @@ import (
 )
 
 // shapes
-type shape struct {
-	form      shapeForm
+type Shape struct {
+	form      ShapeForm
 	character rune
 	color     txt.Color
 }
 
-type shapeForm [][]bool
+type ShapeForm [][]bool
 
 //
 // new shapes
 //
 
 // generates a new random shape
-func (m Game) NewShape() shape {
-	return shape{
+func (m Game) NewShape() Shape {
+	return Shape{
 		color:     txt.Colors[m.rand.Intn(len(txt.Colors))],
-		form:      randomShapeForm(shapesForms, m.rand),
+		form:      randomShapeForm(m.Shapes, m.rand),
 		character: ' ',
 	}
 }
 
-func randomShapeForm(sp []shapeForm, seed *rand.Rand) shapeForm {
+func randomShapeForm(sp []ShapeForm, seed *rand.Rand) ShapeForm {
 	s := sp[seed.Intn(len(sp))]
 
 	// randomly flip shape form
@@ -46,7 +46,7 @@ func randomShapeForm(sp []shapeForm, seed *rand.Rand) shapeForm {
 }
 
 // omg slice overload
-var shapesForms = []shapeForm{
+var shapesForms = []ShapeForm{
 	{
 		{true, true, true, true},
 	},
@@ -77,8 +77,8 @@ var shapesForms = []shapeForm{
 //
 
 // rotates a shape's form 90deg
-func (s shapeForm) Rotate() shapeForm {
-	var n shapeForm
+func (s ShapeForm) Rotate() ShapeForm {
+	var n ShapeForm
 	// transpose the slice, move rows to columns
 	// we assume all rows are the same length
 	for pa, a := range s {
@@ -100,7 +100,7 @@ func (s shapeForm) Rotate() shapeForm {
 }
 
 // flips a shape's form horizontally
-func (s shapeForm) Flip() shapeForm {
+func (s ShapeForm) Flip() ShapeForm {
 	for _, v := range s {
 		slices.Reverse(v)
 	}
@@ -108,7 +108,7 @@ func (s shapeForm) Flip() shapeForm {
 }
 
 // flips a shape's form vertically
-func (s shapeForm) Flop() shapeForm {
+func (s ShapeForm) Flop() ShapeForm {
 	slices.Reverse(s)
 	return s
 }
@@ -119,7 +119,7 @@ func (s shapeForm) Flop() shapeForm {
 
 // gets the position of all blocks in a shape, relative to
 // the shape itself. for position on grid combine with p.Add
-func (s shapeForm) BlockPos() []position {
+func (s ShapeForm) BlockPos() []position {
 	var pos []position
 	for y, xs := range s {
 		for x, exists := range xs {
@@ -134,7 +134,7 @@ func (s shapeForm) BlockPos() []position {
 }
 
 // converts a shape into blocks on a grid
-func (m Game) SetShape(p position, s shape) {
+func (m Game) SetShape(p position, s Shape) {
 	bpos := s.form.BlockPos()
 	for _, b := range bpos {
 		m.Set(b.Add(p), block{color: s.color, character: s.character})
@@ -143,7 +143,7 @@ func (m Game) SetShape(p position, s shape) {
 
 // the position the shape will end up at if the
 // user doesn't input anything
-func (m Game) FinalPosition(s shapeForm) position {
+func (m Game) FinalPosition(s ShapeForm) position {
 	bpos := s.BlockPos()
 	rangeover := m.Height - m.cursor.y - len(m.active.form) + 1
 	var prev position

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"log"
 	"strconv"
+	"strings"
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/huh/v2"
@@ -9,13 +11,37 @@ import (
 )
 
 type customGame struct {
-	form *huh.Form
+	form   *huh.Form
+	blocks *[]int
+	game   game.Game
 }
 
 func newCustomGame() customGame {
 	g := game.NewGame()
 
+	// generate shapes options
+	var blockOptions []huh.Option[int]
+	for pos, s := range g.Shapes {
+		var b strings.Builder
+
+		for _, h := range s {
+			for _, w := range h {
+				if w {
+					b.WriteString("X")
+				} else {
+					b.WriteString(" ")
+				}
+			}
+			b.WriteString("\n")
+		}
+		option := huh.NewOption(b.String(), pos).Selected(true)
+		blockOptions = append(blockOptions, option)
+	}
+
+	var blocks = new([]int)
 	return customGame{
+		game:   g,
+		blocks: blocks,
 		form: huh.NewForm(
 			huh.NewGroup(
 				huh.NewInput().
@@ -44,6 +70,11 @@ func newCustomGame() customGame {
 						return err
 					}).
 					Title("Height"),
+
+				huh.NewMultiSelect[int]().
+					Title("Shapes").
+					Options(blockOptions...).
+					Value(blocks),
 			),
 		),
 	}
@@ -80,10 +111,18 @@ func (m customGame) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		panic(err)
 	}
 
+	// blocks
+	var blocks []game.ShapeForm
+	for _, i := range *m.blocks {
+		log.Printf("using block %v", i)
+		blocks = append(blocks, m.game.Shapes[i])
+	}
+
 	newgame = new(game.NewGame(
 		game.WithSeed(seed),
 		game.WithWidth(w),
 		game.WithHeight(h),
+		game.WithBlocks(blocks),
 	))
 
 	return m, changeState(stateGame)

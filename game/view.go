@@ -111,7 +111,7 @@ func (m Game) infoView() string {
 	// Recent Actions
 	b.WriteString(lipgloss.NewStyle().Bold(true).Render("Recent actions"))
 	b.WriteRune('\n')
-	b.WriteString(recentActions(m.actions))
+	b.WriteString(recentActions(m.Actions))
 
 	// Keybinds
 	//	b.WriteString("\n\n")

@@ -65,7 +65,7 @@ func (m *Game) Move(d position) {
 		return
 	}
 
-	(*m).actions = append((*m).actions, d)
+	(*m).Actions = append(m.Actions, d)
 	(*m).cursor.y += d.y
 	(*m).cursor.x += d.x
 }
