@@ -1,6 +1,7 @@
 package replay
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"slices"
@@ -12,6 +13,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/mifumofu/tetoris/game"
 	"github.com/mifumofu/tetoris/internal/keys"
+	"github.com/mifumofu/tetoris/internal/txt"
 )
 
 type replay struct {
@@ -52,17 +54,62 @@ func (m replay) Init() tea.Cmd {
 
 func (m replay) View() tea.View {
 	gv := m.game.GameView()
-	layout := lipgloss.JoinVertical(
-		lipgloss.Top,
-
+	layout := lipgloss.JoinHorizontal(
+		lipgloss.Left,
 		lipgloss.NewStyle().
-			Border(lipgloss.DoubleBorder()).
-			Render(gv),
+			Margin(2).
+			Render(m.infoPanel()),
 
-		m.progressBar(),
+		lipgloss.JoinVertical(
+			lipgloss.Top,
+
+			lipgloss.NewStyle().
+				Border(lipgloss.DoubleBorder()).
+				Render(gv),
+			m.progressBar(),
+		),
 	)
 
 	return tea.NewView(layout)
+}
+
+func (m replay) infoPanel() string {
+	var b strings.Builder
+
+	b.WriteString(
+		lipgloss.NewStyle().
+			Foreground(lipgloss.Magenta).
+			Render("⟳ Replay"),
+	)
+	b.WriteRune('\n')
+	b.WriteRune('\n')
+
+	b.WriteString(
+		lipgloss.NewStyle().
+			Bold(true).
+			Render("Actions Taken"),
+	)
+	b.WriteRune('\n')
+
+	b.WriteString(m.actionCursorString(m.cursor - 2))
+	b.WriteString(m.actionCursorString(m.cursor - 1))
+	b.WriteString(m.actionCursorString(m.cursor))
+	b.WriteString(m.actionCursorString(m.cursor + 1))
+	b.WriteString(m.actionCursorString(m.cursor + 2))
+
+	return b.String()
+}
+
+func (m replay) actionCursorString(pos int) string {
+	if pos < 0 || pos >= len(m.actions) {
+		return "\n"
+	}
+
+	if pos == m.cursor {
+		return fmt.Sprintf("%v%v \n", txt.ColorReset, m.actions[pos].String())
+	}
+
+	return fmt.Sprintf("%v%v %v\n", txt.ColorDim, m.actions[pos].String(), txt.ColorReset)
 }
 
 func (m replay) progressBar() string {

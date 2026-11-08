@@ -3,6 +3,7 @@ package txt
 type Color string
 
 var ColorReset Color = "\x1b[0m"
+var ColorDim Color = "\x1b[2m"
 var ColorBgBlack Color = "\x1b[40m"
 var ColorAccent Color = "\x1b[0;33m"
 var Colors = []Color{
