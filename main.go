@@ -55,10 +55,11 @@ func main() {
 	}
 
 	m := model{
-		game:   parseFlags(),
-		active: newMenu(),
-		help:   help.New(),
+		game:  parseFlags(),
+		state: stateGame,
+		help:  help.New(),
 	}
+	m.active = m.game // start game immediately
 
 	p := tea.NewProgram(m)
 	if _, err := p.Run(); err != nil {
@@ -96,7 +97,7 @@ func parseFlags() game.Game {
 
 func (m model) Init() tea.Cmd {
 	// Just return `nil`, which means "no I/O right now, please."
-	return nil
+	return m.active.Init()
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
