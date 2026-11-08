@@ -9,7 +9,6 @@ import (
 	"math/rand"
 	"os"
 
-	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -25,7 +24,6 @@ type model struct {
 
 	termHeight int
 	termWidth  int
-	help       help.Model
 }
 
 type state int8
@@ -59,7 +57,6 @@ func main() {
 	m := model{
 		game:  parseFlags(),
 		state: stateGame,
-		help:  help.New(),
 	}
 
 	_ = replay.NewReplay(m.game)
