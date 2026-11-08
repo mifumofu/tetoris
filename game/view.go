@@ -8,6 +8,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mifumofu/tetoris/internal/keys"
 	"github.com/mifumofu/tetoris/internal/txt"
 )
 
@@ -106,8 +107,8 @@ func (m Game) infoView() string {
 	b.WriteString(recentActions(m.Actions))
 
 	// Keybinds
-	//	b.WriteString("\n\n")
-	//	b.WriteString(m.help.View(m.keys))
+	b.WriteString("\n\n")
+	b.WriteString(m.help.View(keys.KeyMap))
 	return b.String()
 }
 

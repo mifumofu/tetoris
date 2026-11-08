@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"charm.land/bubbles/v2/help"
 	tea "charm.land/bubbletea/v2"
 )
 
@@ -20,6 +21,7 @@ type Game struct {
 
 	rand *rand.Rand
 	Seed int64
+	help help.Model
 
 	KillLine int // y of kill line
 	Width    int
@@ -34,6 +36,7 @@ func NewGame(opts ...gameOption) Game {
 	m := Game{
 		state: stateRunning,
 		Seed:  rand.Int63(),
+		help:  help.New(),
 
 		blocks: make(map[position]block),
 
@@ -50,6 +53,7 @@ func NewGame(opts ...gameOption) Game {
 		opt(&m)
 	}
 
+	m.help.ShowAll = true
 	m.rand = rand.New(rand.NewSource(m.Seed))
 	m.active = m.NewShape()
 

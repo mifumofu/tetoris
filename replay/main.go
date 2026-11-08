@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"charm.land/bubbles/v2/help"
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
@@ -21,6 +22,9 @@ type replay struct {
 	orig    game.Game // original game passed in
 	actions []game.Action
 	cursor  int
+
+	keys keymap
+	help help.Model
 }
 
 func NewReplay(g game.Game) replay {
@@ -28,6 +32,8 @@ func NewReplay(g game.Game) replay {
 	return replay{
 		actions: slices.Clone(g.Actions),
 		orig:    g,
+		keys:    KeyMap,
+		help:    help.New(),
 		game: game.NewGame(
 			game.WithBlocks(g.Shapes),
 			game.WithWidth(g.Width),
@@ -96,6 +102,11 @@ func (m replay) infoPanel() string {
 	b.WriteString(m.actionCursorString(m.cursor))
 	b.WriteString(m.actionCursorString(m.cursor + 1))
 	b.WriteString(m.actionCursorString(m.cursor + 2))
+
+	// help keys
+	m.help.ShowAll = true
+	b.WriteRune('\n')
+	b.WriteString(m.help.View(m.keys))
 
 	return b.String()
 }

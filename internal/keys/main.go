@@ -24,7 +24,7 @@ func (k keymap) ShortHelp() []key.Binding {
 // Show all keys to user
 func (k keymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up, k.Down, k.Left, k.Right, k.Instadown, k.Pause, k.Quit}, // first column
+		{k.Up, k.Down, k.Left, k.Right, k.Instadown, k.Pause}, // first column
 	}
 }
 
