@@ -57,20 +57,21 @@ func (m replay) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 
 		switch {
-		//		case key.Matches(msg, keys.KeyMap.Up):
-		//			m.reset()
-		//			return m, nil
+		case key.Matches(msg, keys.KeyMap.Up):
+			m.reset()
+			m.cursor = 0
+			return m, nil
 
 		case key.Matches(msg, keys.KeyMap.Down):
-			//			re := NewReplay(m.orig)
-			//			for _, x := range re.actions {
-			//				re.game.Do(x)
-			//			}
-			//			return re, nil
+			m.reset()
+			for _, x := range m.actions {
+				m.game.Do(x)
+			}
+			m.cursor = len(m.actions) - 1
+			return m, nil
 
 		case key.Matches(msg, keys.KeyMap.Left):
 			if m.cursor <= 0 {
-				log.Printf("actions in save %v, cursor at %v", m.actions, m.cursor)
 				return m, nil
 			}
 
@@ -88,7 +89,6 @@ func (m replay) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, keys.KeyMap.Right):
 			if m.cursor >= len(m.actions)-1 {
-				log.Printf("actions in save %v, cursor at %v", m.actions, m.cursor)
 				return m, nil
 			}
 			m.game.Do(m.actions[m.cursor])
