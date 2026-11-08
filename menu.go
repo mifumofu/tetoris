@@ -110,6 +110,6 @@ func (m model) saveSameDir() error {
 		return err
 	}
 
-	p := path.Join(cwd, "tetoris-save-"+time.Now().Format(time.DateTime))
+	p := path.Join(cwd, "tetoris-save-"+time.Now().Format(time.DateTime)+".json")
 	return m.game.Save(p)
 }
