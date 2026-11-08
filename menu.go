@@ -8,6 +8,7 @@ import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/mifumofu/tetoris/game"
 	"github.com/mifumofu/tetoris/internal/keys"
 	"github.com/mifumofu/tetoris/internal/txt"
 )
@@ -20,7 +21,8 @@ type menu struct {
 func newMenu() menu {
 	return menu{
 		items: []string{
-			"Play",
+			"Resume",
+			"New Game",
 			"Custom Game",
 			"Quit",
 		},
@@ -48,7 +50,11 @@ func (m menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, keys.KeyMap.Select):
 			log.Printf("got item '%v'", m.items[m.cursor])
 			switch m.items[m.cursor] {
-			case "Play":
+			case "Resume":
+				return m, changeState(stateGame)
+
+			case "New Game":
+				newgame = new(game.NewGame())
 				return m, changeState(stateGame)
 
 			case "Custom Game":

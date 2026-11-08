@@ -119,6 +119,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case stateGame:
 			if newgame != nil {
 				m.game = *newgame
+				newgame = nil
 			}
 			m.active = m.game
 			m.state = stateGame
