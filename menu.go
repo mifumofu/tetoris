@@ -3,7 +3,10 @@ package main
 import (
 	"image/color"
 	"log"
+	"os"
+	"path"
 	"strings"
+	"time"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
@@ -24,6 +27,7 @@ func newMenu() menu {
 			"Resume",
 			"New Game",
 			"Custom Game",
+			"Save",
 			"Quit",
 		},
 	}
@@ -60,6 +64,9 @@ func (m menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "Custom Game":
 				return m, changeState(stateCustomGame)
 
+			case "Save":
+				return m, changeState(stateSaveGame)
+
 			case "Quit":
 				return m, tea.Quit
 			}
@@ -95,4 +102,14 @@ func (m menu) View() tea.View {
 				lipgloss.JoinHorizontal(lipgloss.Left, txt.Logo, b.String()),
 			),
 	)
+}
+
+func (m model) saveSameDir() error {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	p := path.Join(cwd, "tetoris-save-"+time.Now().Format(time.DateTime))
+	return m.game.Save(p)
 }

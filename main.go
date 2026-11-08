@@ -35,6 +35,7 @@ const (
 	stateOverlay state = iota
 	stateGame
 	stateCustomGame
+	stateSaveGame
 )
 
 func changeState(s state) tea.Cmd {
@@ -129,6 +130,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.active = newCustomGame()
 			m.state = stateCustomGame
 			return m, m.active.Init()
+
+		case stateSaveGame:
+			err := m.saveSameDir()
+			if err != nil {
+				panic(err)
+			}
+			m.state = stateOverlay
 		}
 	// Is it a key press?
 	case tea.KeyPressMsg:

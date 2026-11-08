@@ -41,15 +41,6 @@ func (m *Game) ResetCursor() {
 
 	if m.FinalPosition(m.active.form).Y <= m.KillLine {
 		m.state = stateEnd
-		pwd, err := os.Getwd()
-		if err != nil {
-			panic(err)
-		}
-
-		err = m.Save(path.Join(pwd, "tetoris-save.json"))
-		if err != nil {
-			panic(err)
-		}
 	}
 
 	m.score += 5
