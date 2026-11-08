@@ -70,7 +70,7 @@ func parseFlags() game.Game {
 	load := flag.String("load", "", "Load a savegame")
 	seed := flag.Int64("seed", 0, "Seed of game")
 	width := flag.Int("width", 13, "Width of game")
-	height := flag.Int("widthheight", 25, "Height of game")
+	height := flag.Int("height", 25, "Height of game")
 	flag.Parse()
 
 	if *load != "" {
