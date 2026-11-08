@@ -1,8 +1,10 @@
 package game
 
 import (
+	"encoding/json"
 	"log"
 	"math/rand"
+	"os"
 	"time"
 
 	tea "charm.land/bubbletea/v2"
@@ -103,4 +105,49 @@ func (m Game) doTick() tea.Cmd {
 	return tea.Tick(nextTick, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
+}
+
+//
+// save & load
+//
+
+// Loads a game
+func LoadGame(path string) (Game, error) {
+	b, err := os.ReadFile(path)
+	if err != nil {
+		return Game{}, err
+	}
+
+	var g Game
+	err = json.Unmarshal(b, &g)
+	if err != nil {
+		return g, err
+	}
+
+	// we use NewGame here for consistency, and for encoding/json
+	// doesn't initalise structs
+	ng := NewGame(
+		WithBlocks(g.Shapes),
+		WithWidth(g.Width),
+		WithHeight(g.Height),
+		WithSeed(g.Seed),
+	)
+
+	// replay all actions
+	for _, b := range g.Actions {
+		ng.Do(b)
+	}
+
+	return ng, nil
+}
+
+// Saves a game to a file
+func (m Game) Save(path string) error {
+	b, err := json.Marshal(m)
+	if err != nil {
+		return err
+	}
+
+	os.WriteFile(path, b, 0666)
+	return err
 }

@@ -67,10 +67,20 @@ func main() {
 }
 
 func parseFlags() game.Game {
+	load := flag.String("load", "", "Load a savegame")
 	seed := flag.Int64("seed", 0, "Seed of game")
 	width := flag.Int("width", 13, "Width of game")
 	height := flag.Int("widthheight", 25, "Height of game")
 	flag.Parse()
+
+	if *load != "" {
+		log.Printf("loading savegame at %v", *load)
+		g, err := game.LoadGame(*load)
+		if err != nil {
+			panic(err)
+		}
+		return g
+	}
 
 	if *seed == 0 {
 		seed = new(rand.Int63())
