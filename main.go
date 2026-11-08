@@ -99,6 +99,7 @@ func main() {
 
 	if *replayy {
 		m.active = replay.NewReplay(m.game)
+		m.state = stateReplay
 	} else {
 		m.active = m.game // start game immediately
 	}
