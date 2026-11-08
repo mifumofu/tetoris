@@ -2,10 +2,14 @@ package replay
 
 import (
 	"log"
+	"math"
 	"slices"
+	"strconv"
+	"strings"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/mifumofu/tetoris/game"
 	"github.com/mifumofu/tetoris/internal/keys"
 )
@@ -47,7 +51,39 @@ func (m replay) Init() tea.Cmd {
 }
 
 func (m replay) View() tea.View {
-	return tea.NewView(m.game.GameView())
+	gv := m.game.GameView()
+	layout := lipgloss.JoinVertical(
+		lipgloss.Top,
+
+		lipgloss.NewStyle().
+			Border(lipgloss.DoubleBorder()).
+			Render(gv),
+
+		m.progressBar(),
+	)
+
+	return tea.NewView(layout)
+}
+
+func (m replay) progressBar() string {
+	width := m.game.Width*2 + 2 - 4
+	progress := float64(m.cursor) / float64(len(m.actions)) * 100
+	progressScaled := progress * (float64(width) / 100)
+	log.Printf("progress at %v/%v, %v out of 100", progressScaled, width, progress)
+
+	var b strings.Builder
+	for x := range width {
+		if float64(x) < progressScaled {
+			b.WriteRune('█')
+		} else {
+			b.WriteRune('░')
+		}
+	}
+
+	b.WriteRune(' ')
+	b.WriteString(strconv.Itoa(int(math.Ceil(progress))))
+	b.WriteRune('%')
+	return b.String()
 }
 
 func (m replay) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
