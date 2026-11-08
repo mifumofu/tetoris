@@ -35,6 +35,7 @@ const (
 	stateGame
 	stateCustomGame
 	stateSaveGame
+	stateReplay
 )
 
 func changeState(s state) tea.Cmd {
@@ -54,49 +55,51 @@ func main() {
 		log.SetOutput(io.Discard)
 	}
 
-	m := model{
-		game:  parseFlags(),
-		state: stateGame,
-	}
-
-	_ = replay.NewReplay(m.game)
-	m.active = replay.NewReplay(m.game)
-	//	m.active = m.game // start game immediately
-
-	p := tea.NewProgram(m)
-	if _, err := p.Run(); err != nil {
-		fmt.Printf("Alas, there's been an error: %v", err)
-		os.Exit(1)
-	}
-}
-
-func parseFlags() game.Game {
-	//	replayy := flag.Bool("replay", false, "Load game as replay")
+	// flags
+	var g game.Game
+	replayy := flag.Bool("replay", false, "Load game as replay")
 	load := flag.String("load", "", "Load a savegame")
 	seed := flag.Int64("seed", 0, "Seed of game")
 	width := flag.Int("width", 13, "Width of game")
 	height := flag.Int("height", 25, "Height of game")
 	flag.Parse()
 
-	if *load != "" {
-		log.Printf("loading savegame at %v", *load)
-		g, err := game.LoadGame(*load)
-		if err != nil {
-			panic(err)
-		}
-
-		return g
-	}
-
+	// default game from args
 	if *seed == 0 {
 		seed = new(rand.Int63())
 	}
-
-	return game.NewGame(
+	g = game.NewGame(
 		game.WithWidth(*width),
 		game.WithHeight(*height),
 		game.WithSeed(*seed),
 	)
+
+	// load game
+	if *load != "" {
+		log.Printf("loading savegame at %v", *load)
+		var err error
+		g, err = game.LoadGame(*load)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	m := model{
+		game:  g,
+		state: stateGame,
+	}
+
+	if *replayy {
+		m.active = replay.NewReplay(m.game)
+	} else {
+		m.active = m.game // start game immediately
+	}
+
+	p := tea.NewProgram(m)
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("Alas, there's been an error: %v", err)
+		os.Exit(1)
+	}
 }
 
 func (m model) Init() tea.Cmd {
