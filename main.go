@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"runtime/debug"
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
@@ -51,6 +52,13 @@ func main() {
 			panic(err)
 		}
 		defer f.Close()
+
+		bi, ok := debug.ReadBuildInfo()
+		if ok {
+			log.Printf("Starting! %v with %v at %v", bi.Path, bi.GoVersion, bi.Main.Version)
+		} else {
+			log.Println("could not read versioning information")
+		}
 	} else {
 		log.SetOutput(io.Discard)
 	}
