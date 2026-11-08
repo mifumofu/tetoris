@@ -15,6 +15,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/mifumofu/tetoris/game"
 	"github.com/mifumofu/tetoris/internal/keys"
+	"github.com/mifumofu/tetoris/replay"
 )
 
 type model struct {
@@ -60,7 +61,10 @@ func main() {
 		state: stateGame,
 		help:  help.New(),
 	}
-	m.active = m.game // start game immediately
+
+	_ = replay.NewReplay(m.game)
+	m.active = replay.NewReplay(m.game)
+	//	m.active = m.game // start game immediately
 
 	p := tea.NewProgram(m)
 	if _, err := p.Run(); err != nil {
@@ -70,6 +74,7 @@ func main() {
 }
 
 func parseFlags() game.Game {
+	//	replayy := flag.Bool("replay", false, "Load game as replay")
 	load := flag.String("load", "", "Load a savegame")
 	seed := flag.Int64("seed", 0, "Seed of game")
 	width := flag.Int("width", 13, "Width of game")
@@ -82,6 +87,7 @@ func parseFlags() game.Game {
 		if err != nil {
 			panic(err)
 		}
+
 		return g
 	}
 

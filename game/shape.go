@@ -31,6 +31,9 @@ func (m Game) NewShape() Shape {
 
 func randomShapeForm(sp []ShapeForm, seed *rand.Rand) ShapeForm {
 	s := sp[seed.Intn(len(sp))]
+	return s
+
+	// this breaks reproducibility for some reason
 
 	// randomly flip shape form
 	if seed.Int()%2 == 0 {

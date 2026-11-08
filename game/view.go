@@ -14,7 +14,7 @@ import (
 func (m Game) View() tea.View {
 	gv := lipgloss.NewStyle().Border(lipgloss.DoubleBorder()).MarginLeft(1)
 
-	s := gameView(m)
+	s := m.GameView()
 	if m.state == stateEnd {
 		gv = gv.BorderForeground(lipgloss.Yellow)
 	}
@@ -32,7 +32,7 @@ func (m Game) View() tea.View {
 	return v
 }
 
-func gameView(m Game) string {
+func (m Game) GameView() string {
 	blocks := maps.Clone(m.blocks)
 
 	// draw hint of final block position
