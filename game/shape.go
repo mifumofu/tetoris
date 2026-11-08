@@ -99,6 +99,25 @@ func (s ShapeForm) Rotate() ShapeForm {
 	return n
 }
 
+// rotates active block
+// respects collission with border and other blocks
+func (m *Game) Rotate() {
+	rot, canrotate := m.active.form.Rotate(), true
+	// don't allow the player to rotate the block into a wall
+	for _, b := range rot.BlockPos() {
+		_, exists := m.Get(b.Add(m.cursor))
+		if b.Add(m.cursor).X >= m.Width || b.Add(m.cursor).Y >= m.Height || exists {
+			// prevent rotating into blocks
+			canrotate = false
+			break
+		}
+	}
+
+	if canrotate {
+		m.active.form = rot
+	}
+}
+
 // flips a shape's form horizontally
 func (s ShapeForm) Flip() ShapeForm {
 	for _, v := range s {

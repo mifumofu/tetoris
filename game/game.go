@@ -59,6 +59,7 @@ func (m *Game) Do(a Action) {
 	}
 	switch a {
 	case ActionRotate:
+		m.Rotate()
 
 	case ActionDown:
 		m.Move(position{Y: 1})

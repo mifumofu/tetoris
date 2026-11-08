@@ -23,22 +23,7 @@ func (m Game) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		switch {
 		case key.Matches(msg, keys.KeyMap.Up):
-			if m.state == stateRunning {
-				rot, canrotate := m.active.form.Rotate(), true
-				// don't allow the player to rotate the block into a wall
-				for _, b := range rot.BlockPos() {
-					_, exists := m.Get(b.Add(m.cursor))
-					if b.Add(m.cursor).X >= m.Width || b.Add(m.cursor).Y >= m.Height || exists {
-						// prevent rotating into blocks
-						canrotate = false
-						break
-					}
-				}
-
-				if canrotate {
-					m.active.form = rot
-				}
-			}
+			m.Do(ActionRotate)
 
 		case key.Matches(msg, keys.KeyMap.Down):
 			m.Do(ActionDown)
