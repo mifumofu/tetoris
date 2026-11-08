@@ -127,7 +127,7 @@ func (s ShapeForm) BlockPos() []position {
 				continue
 			}
 
-			pos = append(pos, position{y: y, x: x})
+			pos = append(pos, position{Y: y, X: x})
 		}
 	}
 	return pos
@@ -145,13 +145,13 @@ func (m Game) SetShape(p position, s Shape) {
 // user doesn't input anything
 func (m Game) FinalPosition(s ShapeForm) position {
 	bpos := s.BlockPos()
-	rangeover := m.Height - m.cursor.y - len(m.active.form) + 1
+	rangeover := m.Height - m.cursor.Y - len(m.active.form) + 1
 	var prev position
 
 	for y := range rangeover {
 		var canuse bool = false
 		for _, b := range bpos {
-			p := b.Add(position{y: m.cursor.y + y, x: m.cursor.x})
+			p := b.Add(position{Y: m.cursor.Y + y, X: m.cursor.X})
 
 			if _, exists := m.Get(p); exists {
 				canuse = true
@@ -163,7 +163,7 @@ func (m Game) FinalPosition(s ShapeForm) position {
 			return prev
 		}
 
-		prev = position{y: m.cursor.y + y, x: m.cursor.x}
+		prev = position{Y: m.cursor.Y + y, X: m.cursor.X}
 	}
 
 	return prev

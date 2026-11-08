@@ -14,7 +14,7 @@ const (
 
 func (m Game) Get(p position) (block, bool) {
 	// block does not exist if its out of bounds
-	if p.x >= m.Width || p.x < 0 || p.y >= m.Height || p.y < 0 {
+	if p.X >= m.Width || p.X < 0 || p.Y >= m.Height || p.Y < 0 {
 		return block{}, true
 	}
 
@@ -34,14 +34,47 @@ func (m *Game) Set(p position, b block) {
 // resets the cursor with a new shape
 func (m *Game) ResetCursor() {
 	m.SetShape(m.cursor, m.active)
-	m.cursor = position{x: m.Width/2 - 1, y: 0}
+	m.cursor = position{X: m.Width/2 - 1, Y: 0}
 	m.active = m.NewShape()
 
-	if m.FinalPosition(m.active.form).y <= m.killLine {
+	if m.FinalPosition(m.active.form).Y <= m.KillLine {
 		m.state = stateEnd
+		pwd, err := os.Getwd()
+		if err != nil {
+			panic(err)
+		}
+
+		err = m.Save(path.Join(pwd, "tetoris-save.json"))
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	m.score += 5
+}
+
+func (m *Game) Do(a Action) {
+	if m.state != stateRunning {
+		return
+	}
+	switch a {
+	case ActionRotate:
+
+	case ActionDown:
+		m.Move(position{Y: 1})
+
+	case ActionLeft:
+		m.Move(position{X: -1})
+
+	case ActionRight:
+		m.Move(position{X: 1})
+
+	case ActionInstadown:
+		m.cursor = m.FinalPosition(m.active.form)
+		m.Move(position{Y: 1})
+
+	}
+	(*m).Actions = append(m.Actions, a)
 }
 
 // handles moving a block, resets position if necessary
@@ -51,23 +84,22 @@ func (m *Game) Move(d position) {
 	}
 
 	if !m.CanMove(d) {
-		if d.y > 0 && d.x == 0 {
+		if d.Y > 0 && d.X == 0 {
 			cur := m.cursor
 			form := m.active.form.BlockPos()
 			m.ResetCursor()
 
 			for _, b := range form {
-				if m.CanClearRow(cur.Add(b).y) {
-					m.ClearRow(cur.Add(b).y)
+				if m.CanClearRow(cur.Add(b).Y) {
+					m.ClearRow(cur.Add(b).Y)
 				}
 			}
 		}
 		return
 	}
 
-	(*m).Actions = append(m.Actions, d)
-	(*m).cursor.y += d.y
-	(*m).cursor.x += d.x
+	(*m).cursor.Y += d.Y
+	(*m).cursor.X += d.X
 }
 
 // checks if s can move the difference of p in m
@@ -79,10 +111,10 @@ func (m Game) CanMove(d position) bool {
 		if _, exists := m.Get(npos); exists {
 			return false
 
-		} else if npos.x < 0 || npos.x == m.Width {
+		} else if npos.X < 0 || npos.X == m.Width {
 			return false
 
-		} else if npos.y < 0 || npos.y == m.Height {
+		} else if npos.Y < 0 || npos.Y == m.Height {
 			return false
 		}
 	}
@@ -92,10 +124,10 @@ func (m Game) CanMove(d position) bool {
 // checks if a row can be cleared
 func (m Game) CanClearRow(y int) bool {
 	for px := range m.Width {
-		pos := position{x: px, y: y}
+		pos := position{X: px, Y: y}
 		b, exists := m.Get(pos)
 		_ = b
-		if pos.x == 0 {
+		if pos.X == 0 {
 			continue
 		}
 		if !exists {
@@ -113,8 +145,8 @@ func (m *Game) ClearRow(y int) {
 			continue
 		}
 		for px := range m.Width {
-			pos := position{y: rangeover - py, x: px}
-			block, exists := m.Get(position{x: pos.x, y: pos.y - 1})
+			pos := position{Y: rangeover - py, X: px}
+			block, exists := m.Get(position{X: pos.X, Y: pos.Y - 1})
 
 			if exists {
 				m.Set(pos, block)
@@ -130,21 +162,21 @@ func (m *Game) ClearRow(y int) {
 
 // position
 type position struct {
-	x int
-	y int
+	X int
+	Y int
 }
 
 func (p position) Add(d position) position {
-	return position{x: p.x + d.x, y: p.y + d.y}
+	return position{X: p.X + d.X, Y: p.Y + d.Y}
 }
 
 // finds if p is in the boundaries of X, Y
 func (p position) In(x, y int) bool {
-	if !(p.x > 0 && p.x <= x) {
+	if !(p.X > 0 && p.X <= x) {
 		return false
 	}
 
-	if !(p.y > 0 && p.y <= y) {
+	if !(p.Y > 0 && p.Y <= y) {
 		return false
 	}
 	return true
@@ -152,7 +184,7 @@ func (p position) In(x, y int) bool {
 
 // checks if a position is equal to another
 func (p position) Equal(a position) bool {
-	return p.x == a.x && p.y == a.y
+	return p.X == a.X && p.Y == a.Y
 }
 
 // block

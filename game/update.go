@@ -15,7 +15,7 @@ func (m Game) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case tickMsg:
-		m.Move(position{y: 1})
+		m.Do(ActionDown)
 		return m, m.doTick()
 
 	// Is it a key press?
@@ -28,7 +28,7 @@ func (m Game) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// don't allow the player to rotate the block into a wall
 				for _, b := range rot.BlockPos() {
 					_, exists := m.Get(b.Add(m.cursor))
-					if b.Add(m.cursor).x >= m.Width || b.Add(m.cursor).y >= m.Height || exists {
+					if b.Add(m.cursor).X >= m.Width || b.Add(m.cursor).Y >= m.Height || exists {
 						// prevent rotating into blocks
 						canrotate = false
 						break
@@ -41,17 +41,16 @@ func (m Game) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case key.Matches(msg, keys.KeyMap.Down):
-			m.Move(position{y: 1})
+			m.Do(ActionDown)
 
 		case key.Matches(msg, keys.KeyMap.Left):
-			m.Move(position{x: -1})
+			m.Do(ActionLeft)
 
 		case key.Matches(msg, keys.KeyMap.Right):
-			m.Move(position{x: 1})
+			m.Do(ActionRight)
 
 		case key.Matches(msg, keys.KeyMap.Instadown):
-			m.cursor = m.FinalPosition(m.active.form)
-			m.Move(position{y: 1})
+			m.Do(ActionInstadown)
 
 		case key.Matches(msg, keys.KeyMap.Pause):
 			if m.state == stateRunning {

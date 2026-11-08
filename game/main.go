@@ -13,13 +13,13 @@ type Game struct {
 	score       int
 	rowsCleared int
 	state       state
-	Actions     []position // list of all moves made
+	Actions     []Action // list of all moves made
 	blocks      map[position]block
 
 	rand *rand.Rand
 	Seed int64
 
-	killLine int // y of kill line
+	KillLine int // y of kill line
 	Width    int
 	Height   int
 	Shapes   []ShapeForm
@@ -35,12 +35,12 @@ func NewGame(opts ...gameOption) Game {
 
 		blocks: make(map[position]block),
 
-		killLine: 2,
+		KillLine: 2,
 		Width:    13,
 		Height:   25,
 		Shapes:   shapesForms,
 
-		cursor: position{x: 5, y: 0},
+		cursor: position{X: 5, Y: 0},
 	}
 
 	// apply options

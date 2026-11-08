@@ -43,7 +43,7 @@ func gameView(m Game) string {
 
 	// draw hint of final block position
 	for w := range m.Width {
-		blocks[position{x: w, y: m.killLine}] = block{character: '-'}
+		blocks[position{X: w, Y: m.KillLine}] = block{character: '-'}
 	}
 
 	// draw hint of final block position
@@ -63,7 +63,7 @@ func gameView(m Game) string {
 			b.WriteString("\n")
 		}
 		for w := range m.Width {
-			if bk, ok := blocks[position{y: h, x: w}]; ok {
+			if bk, ok := blocks[position{Y: h, X: w}]; ok {
 				b.WriteString(string(bk.color))
 				b.WriteRune(bk.character)
 				b.WriteRune(bk.character)
@@ -120,10 +120,10 @@ func (m Game) infoView() string {
 }
 
 // returns a string that lists recent actions taken
-func recentActions(dd []position) string {
+func recentActions(dd []Action) string {
 	slices.Reverse(dd)
 	length := 10
-	var keys []position // include
+	var keys []Action
 
 	if len(dd) < length {
 		keys = dd
@@ -134,17 +134,22 @@ func recentActions(dd []position) string {
 	// render keys
 	var b strings.Builder
 	for _, k := range keys {
-		if k.x > 0 { // right
-			b.WriteString("→")
+		switch k {
 
-		} else if k.x < 0 { // left
-			b.WriteString("←")
+		case ActionRotate:
+			b.WriteRune('↷')
 
-		} else if k.y > 0 { // down
-			b.WriteString("↓")
+		case ActionDown:
+			b.WriteRune('↓')
 
-		} else if k.y < 0 { // up
-			b.WriteString("↑")
+		case ActionLeft:
+			b.WriteRune('←')
+
+		case ActionRight:
+			b.WriteRune('→')
+
+		case ActionInstadown:
+			b.WriteRune('↡')
 		}
 	}
 
