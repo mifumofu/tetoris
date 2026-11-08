@@ -1,9 +1,6 @@
 package game
 
 import (
-	"os"
-	"path"
-
 	"github.com/mifumofu/tetoris/internal/txt"
 )
 
