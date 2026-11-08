@@ -36,13 +36,6 @@ func (m Game) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case key.Matches(msg, keys.KeyMap.Instadown):
 			m.Do(ActionInstadown)
-
-		case key.Matches(msg, keys.KeyMap.Pause):
-			if m.state == stateRunning {
-				m.state = statePaused
-			} else if m.state == statePaused {
-				m.state = stateRunning
-			}
 		}
 	}
 

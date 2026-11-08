@@ -15,13 +15,7 @@ func (m Game) View() tea.View {
 	gv := lipgloss.NewStyle().Border(lipgloss.DoubleBorder()).MarginLeft(1)
 
 	s := gameView(m)
-	if m.state == statePaused {
-		s = lipgloss.Place(m.Width*2, m.Height, lipgloss.Center, lipgloss.Center, "Game Paused")
-	}
-
-	if m.state == statePaused {
-		gv = gv.BorderForeground(lipgloss.Red)
-	} else if m.state == stateEnd {
+	if m.state == stateEnd {
 		gv = gv.BorderForeground(lipgloss.Yellow)
 	}
 
@@ -83,8 +77,6 @@ func (m Game) infoView() string {
 
 	if m.state == stateRunning {
 		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Green).Render("▶ Running"))
-	} else if m.state == statePaused {
-		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Red).Render("⏸ Paused"))
 	} else if m.state == stateEnd {
 		b.WriteString(lipgloss.NewStyle().Foreground(lipgloss.Yellow).Render("⏹ Game ended"))
 	}

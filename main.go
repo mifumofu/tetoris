@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -131,6 +132,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 		log.Println("press", msg)
 		switch {
+		case key.Matches(msg, keys.KeyMap.Pause):
+			switch m.state {
+
+			case stateGame:
+				// we need to set game to the active modal, as otherwise we end up
+				// with the cursor resetting to the cursor resetting to the original position
+				// and form while blocks stay the same (pointers)
+				g, ok := m.active.(game.Game)
+				if !ok {
+					panic(errors.New("Active model not Game even though state == game"))
+				}
+				m.game = g
+				return m, changeState(stateOverlay)
+
+			case stateOverlay:
+				return m, changeState(stateGame)
+			}
+
 		case key.Matches(msg, keys.KeyMap.Quit):
 			return m, tea.Quit
 

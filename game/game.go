@@ -11,7 +11,6 @@ type state int8
 
 const (
 	stateRunning state = iota
-	statePaused
 	stateEnd
 )
 
