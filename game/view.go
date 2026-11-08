@@ -121,6 +121,7 @@ func (m Game) infoView() string {
 
 // returns a string that lists recent actions taken
 func recentActions(dd []Action) string {
+	dd = slices.Clone(dd) // prevents reversing the slice passed in
 	slices.Reverse(dd)
 	length := 10
 	var keys []Action
