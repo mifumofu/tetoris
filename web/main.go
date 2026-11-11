@@ -6,7 +6,8 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/ws", handleMpConnections)
+	http.HandleFunc("/mp/{id}/ws", handleMpConnections)
+	http.HandleFunc("/mp/create", handleCreateGame)
 
 	fmt.Println("Server started on :8080")
 	err := http.ListenAndServe(":8080", nil)
