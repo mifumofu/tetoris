@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log/slog"
 	"math/rand"
 	"net/http"
 )
@@ -42,6 +43,7 @@ func newGame() (GameID, *MpGame) {
 func handleCreateGame(w http.ResponseWriter, r *http.Request) {
 	i, g := newGame()
 
+	slog.Info("Created new game", "id", i)
 	games[i] = g
 	w.Write([]byte(i))
 }

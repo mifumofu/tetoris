@@ -1,17 +1,30 @@
 package main
 
 import (
-	"fmt"
+	"log/slog"
 	"net/http"
+	"os"
 )
 
 func main() {
+
+	if os.Getenv("DEBUG") != "" {
+		slog.SetLogLoggerLevel(slog.LevelDebug)
+		slog.Info("Enabled debug logging")
+	} else {
+		// use json handler unless debugging
+		slog.SetDefault(
+			slog.New(slog.NewJSONHandler(os.Stdout, nil)),
+		)
+	}
+
 	http.HandleFunc("/mp/{id}/ws", handleMpConnections)
 	http.HandleFunc("/mp/create", handleCreateGame)
 
-	fmt.Println("Server started on :8080")
-	err := http.ListenAndServe(":8080", nil)
+	addr := ":8080"
+	slog.Info("Server started", "addr", addr)
+	err := http.ListenAndServe(addr, nil)
 	if err != nil {
-		fmt.Println("ListenAndServe:", err)
+		slog.Error("ListenAndServe", "err", err)
 	}
 }
