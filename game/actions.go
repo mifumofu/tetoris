@@ -13,7 +13,7 @@ const (
 func (a Action) String() string {
 	switch a {
 	case ActionRotate:
-		return "↷ Rotated"
+		return "↷ Rotate"
 
 	case ActionDown:
 		return "↓ Down"
