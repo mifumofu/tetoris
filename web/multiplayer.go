@@ -3,9 +3,9 @@ package main
 import (
 	"errors"
 	"log/slog"
-	"math/rand"
 	"net/http"
 	"strconv"
+	"uuid"
 
 	"github.com/gorilla/websocket"
 	"github.com/mifumofu/tetoris/game"
@@ -19,12 +19,6 @@ var (
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true }, // Allow all connections
-}
-
-type client struct {
-	id      int
-	conn    *websocket.Conn
-	request *http.Request
 }
 
 func handleMpConnections(w http.ResponseWriter, r *http.Request) {
@@ -51,10 +45,16 @@ func handleMpConnections(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cid := uuid.NewV4()
 	c := client{
 		conn:    ws,
-		id:      rand.Int(),
+		ID:      cid,
 		request: r,
+		logger: slog.With(slog.Group("conn",
+			"ip", r.RemoteAddr,
+			"user-agent", r.UserAgent(),
+			"id", cid,
+		)),
 	}
 	g.Players[c] = true
 
@@ -69,38 +69,33 @@ func handleMpConnections(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleMpMessages(ws *websocket.Conn, c client, g *MpGame) {
-	logger := slog.With(slog.Group("conn",
+	c.logger = slog.With(slog.Group("conn",
 		"ip", c.request.RemoteAddr,
 		"user-agent", c.request.UserAgent(),
-		"id", c.id,
+		"id", c.ID,
 	))
 
-	logger.Info("Connected")
+	c.logger.Info("Connected")
 
 	for {
 		_, msg, err := ws.ReadMessage()
 		if err != nil {
-			logger.Warn("failed to read message", "err", err)
+			c.logger.Warn("failed to read message", "err", err)
 			g.DisconnectClient(c)
 			break
 		}
 
 		a, err := parseMpMessage(msg)
 		if err != nil {
-			logger.Warn("failed to parse message", "err", err)
+			c.logger.Warn("failed to parse message", "err", err)
 			g.DisconnectClient(c)
 			break
 		}
 
-		logger.Debug("msg", "action", a.String())
+		c.logger.Debug("msg", "action", a.String())
 
 		// Broadcast message to all clients
-		for client := range g.Players {
-			if err := client.conn.WriteMessage(websocket.TextMessage, []byte(a.String())); err != nil {
-				logger.Warn("broadcast error", "err", err)
-				g.DisconnectClient(c)
-			}
-		}
+		g.sendAllUpdate(c.ID, a)
 	}
 }
 
