@@ -26,7 +26,7 @@ func Create() (MpGame, error) {
 		return MpGame{}, err
 	}
 
-	return connect(code)
+	return Connect(code)
 }
 
 // creates a new game
@@ -42,7 +42,7 @@ func create() (string, error) {
 }
 
 // connects to a game
-func connect(code string) (MpGame, error) {
+func Connect(code string) (MpGame, error) {
 	// connection url
 	u := url.URL{Scheme: "ws", Host: Server, Path: "/mp/" + code + "/ws"}
 	log.Printf("connecting to %s", u.String())
@@ -56,12 +56,13 @@ func connect(code string) (MpGame, error) {
 	done := make(chan struct{})
 
 	// deal with messages
-
 	g := MpGame{
-		game: game.NewGame(),
 		conn: conn,
 		done: done,
 	}
+
+	g.game = game.NewGame(game.WithActionListener(g.actionListener))
+
 	go g.receive()
 
 	return g, nil

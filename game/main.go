@@ -13,11 +13,12 @@ import (
 
 // Game and helper functions
 type Game struct {
-	score       int
-	rowsCleared int
-	state       state
-	Actions     []Action // list of all moves made
-	blocks      map[position]block
+	score          int
+	rowsCleared    int
+	state          state
+	Actions        []Action     // list of all moves made
+	actionListener func(Action) // executed whenever an action is performed
+	blocks         map[position]block
 
 	rand *rand.Rand
 	Seed int64
@@ -34,9 +35,10 @@ type Game struct {
 
 func NewGame(opts ...gameOption) Game {
 	m := Game{
-		state: stateRunning,
-		Seed:  rand.Int63(),
-		help:  help.New(),
+		state:          stateRunning,
+		Seed:           rand.Int63(),
+		help:           help.New(),
+		actionListener: func(Action) {}, // prevents crashes from nil function
 
 		blocks: make(map[position]block),
 
@@ -88,6 +90,12 @@ func WithHeight(h int) gameOption {
 func WithBlocks(sf []ShapeForm) gameOption {
 	return func(s *Game) {
 		s.Shapes = sf
+	}
+}
+
+func WithActionListener(al func(Action)) gameOption {
+	return func(s *Game) {
+		s.actionListener = al
 	}
 }
 

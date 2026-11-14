@@ -65,6 +65,10 @@ func (m *Game) Do(a Action) {
 		m.Move(position{Y: 1})
 
 	}
+
+	// pass action to listening function
+	m.actionListener(a)
+
 	(*m).Actions = append(m.Actions, a)
 }
 
