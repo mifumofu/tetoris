@@ -53,7 +53,6 @@ func Connect(code string) (MpGame, error) {
 	if err != nil {
 		return MpGame{}, err
 	}
-	defer conn.Close()
 	done := make(chan struct{})
 
 	// deal with messages
