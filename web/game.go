@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/mifumofu/tetoris/game"
 )
@@ -11,6 +12,12 @@ import (
 func (g *MpGame) DisconnectClient(c client) {
 	c.conn.Close()
 	delete(g.Players, c)
+
+	if g.state == StateLobby {
+		time.Sleep(50 * time.Millisecond) // avoids: panic: concurrent write to websocket connection
+		slog.Info("Sending lobby update")
+		g.sendLobbyUpdate(false)
+	}
 }
 
 // returns a string of length l with its contents being random
