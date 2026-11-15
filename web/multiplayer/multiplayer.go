@@ -60,7 +60,11 @@ func ConnectWS(g *MpGame, w http.ResponseWriter, r *http.Request) {
 	}()
 
 	// send update in game state to players
-	g.sendLobbyUpdate(false)
+	if len(g.Players) == g.MaxPlayers {
+		g.Start()
+	} else {
+		g.sendLobbyUpdate(false)
+	}
 
 	// handle incoming messages
 	handleMpMessages(ws, c, g)

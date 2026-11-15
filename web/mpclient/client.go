@@ -19,10 +19,12 @@ var Server = "127.0.0.1:8080"
 
 type MpGame struct {
 	game    game.Game
-	players []uuid.UUID
+	players map[uuid.UUID]game.Game
+	selfId  uuid.UUID
 
 	done  chan struct{}
 	conn  *websocket.Conn
+	id    multiplayer.GameID
 	state multiplayer.State
 }
 
@@ -65,6 +67,7 @@ func Connect(code string) (MpGame, error) {
 	g := MpGame{
 		conn:  conn,
 		done:  done,
+		id:    multiplayer.GameID(code),
 		state: multiplayer.StateLobby,
 	}
 

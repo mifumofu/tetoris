@@ -16,15 +16,7 @@ func (m MpGame) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.LobbyUpdate(msg)
 
 	case multiplayer.StatePlaying:
-		a, b := m.game.Update(msg)
-
-		c, ok := a.(game.Game)
-		if !ok {
-			panic("Game did not return a game model")
-		}
-
-		m.game = c
-		return m, b
+		return m.GameUpdate(msg)
 	}
 
 	return m, nil
@@ -39,7 +31,7 @@ func (m MpGame) View() tea.View {
 	case multiplayer.StateLobby:
 		return m.LobbyView()
 	case multiplayer.StatePlaying:
-		return m.game.View()
+		return m.GameView()
 	}
 
 	panic("Invalid state for mpclient")

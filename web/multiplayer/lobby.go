@@ -13,22 +13,45 @@ type GameMpUpdate struct {
 	Players []uuid.UUID
 	Game    game.Game
 	Start   bool
+	YourID  uuid.UUID
 }
 
 // start a game
 func (g *MpGame) Start() {
-	json.Marshal(g)
+	g.state = StatePlaying
+	g.sendLobbyUpdate(true)
 }
 
 // updates lobby on state
 func (g *MpGame) sendLobbyUpdate(start bool) {
-	b, err := g.encodeLobbyUpdate(start)
-	if err != nil {
-		slog.Warn("failed to encode lobby update", "err", err)
-		return
-	}
+	for p := range g.Players {
+		b, err := json.Marshal(GameMpUpdate{
+			Game: g.InitialGame,
+			Players: func() []uuid.UUID {
+				var ids []uuid.UUID
+				for i := range g.Players {
+					ids = append(ids, i.ID)
+				}
+				return ids
+			}(),
+			Start:  start,
+			YourID: p.ID,
+		})
 
-	g.sendAll(websocket.BinaryMessage, b)
+		if err != nil {
+			slog.Warn("failed to encode lobby update", "err", err)
+			return
+		}
+
+		// send message
+		go func() {
+			err := p.conn.WriteMessage(websocket.BinaryMessage, b)
+			if err != nil {
+				p.logger.Warn("broadcast error", "err", err)
+				g.DisconnectClient(p)
+			}
+		}()
+	}
 }
 
 // encodes a lobby update
