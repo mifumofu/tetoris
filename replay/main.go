@@ -13,7 +13,6 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/mifumofu/tetoris/game"
-	"github.com/mifumofu/tetoris/internal/keys"
 	"github.com/mifumofu/tetoris/internal/txt"
 )
 
@@ -151,12 +150,12 @@ func (m replay) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 
 		switch {
-		case key.Matches(msg, keys.KeyMap.Up):
+		case key.Matches(msg, KeyMap.Start):
 			m.reset()
 			m.cursor = 0
 			return m, nil
 
-		case key.Matches(msg, keys.KeyMap.Down):
+		case key.Matches(msg, KeyMap.End):
 			m.reset()
 			for _, x := range m.actions {
 				m.game.Do(x)
@@ -164,7 +163,7 @@ func (m replay) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.cursor = len(m.actions) - 1
 			return m, nil
 
-		case key.Matches(msg, keys.KeyMap.Left):
+		case key.Matches(msg, KeyMap.Previous):
 			if m.cursor <= 0 {
 				return m, nil
 			}
@@ -181,12 +180,15 @@ func (m replay) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 
-		case key.Matches(msg, keys.KeyMap.Right):
+		case key.Matches(msg, KeyMap.Next):
 			if m.cursor >= len(m.actions)-1 {
 				return m, nil
 			}
 			m.game.Do(m.actions[m.cursor])
 			m.cursor += 1
+
+		case key.Matches(msg, KeyMap.ContinueGame):
+			return m.game, m.game.Init()
 		}
 	}
 

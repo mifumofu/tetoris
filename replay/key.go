@@ -5,11 +5,12 @@ import "charm.land/bubbles/v2/key"
 // keymap defines a set of keybindings. To work for help it must satisfy
 // key.Map. It could also very easily be a map[string]key.Binding.
 type keymap struct {
-	Start    key.Binding
-	End      key.Binding
-	Previous key.Binding
-	Next     key.Binding
-	Quit     key.Binding
+	Start        key.Binding
+	End          key.Binding
+	Previous     key.Binding
+	Next         key.Binding
+	ContinueGame key.Binding // play from point in replay
+	Quit         key.Binding
 }
 
 // we don't use this since we can show all keys vertically, so return nothing
@@ -20,7 +21,7 @@ func (k keymap) ShortHelp() []key.Binding {
 // Show all keys to user
 func (k keymap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Start, k.End, k.Previous, k.Next, k.Quit}, // first column
+		{k.Start, k.End, k.Previous, k.Next, k.ContinueGame, k.Quit}, // first column
 	}
 }
 
@@ -40,6 +41,10 @@ var KeyMap = keymap{
 	Next: key.NewBinding(
 		key.WithKeys("right", "l", "d"),
 		key.WithHelp("→/l/d", "next"),
+	),
+	ContinueGame: key.NewBinding(
+		key.WithKeys("e"),
+		key.WithHelp("e", "play from here"),
 	),
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
