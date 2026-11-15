@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
 
 	"github.com/gorilla/websocket"
 	"github.com/mifumofu/tetoris/game"
@@ -83,7 +84,7 @@ func (g MpGame) receive() {
 
 // sends an action to the server
 func (g MpGame) Send(a game.Action) {
-	err := g.conn.WriteMessage(websocket.TextMessage, []byte(a.String())) // TODO: use proper format
+	err := g.conn.WriteMessage(websocket.TextMessage, []byte(strconv.Itoa(int(a))))
 	if err != nil {
 		log.Println("write:", err)
 		return
