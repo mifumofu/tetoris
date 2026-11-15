@@ -27,6 +27,7 @@ func newMenu() menu {
 			"Resume",
 			"New Game",
 			"Custom Game",
+			"Save",
 			"Quit",
 		},
 	}
@@ -61,6 +62,9 @@ func (m menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case "Custom Game":
 				return nil, updateActiveModel(newCustomGame())
+
+			case "Save":
+				return nil, saveGame()
 
 			case "Quit":
 				return m, tea.Quit
@@ -99,23 +103,39 @@ func (m menu) View() tea.View {
 	)
 }
 
-// Checks if the active model is a game.Game
-func (m model) activeGame() bool {
-	_, ok := m.active.(game.Game)
-	return ok
+// not an ideal solution, but theres no other way to
+// interact with the active Game other than replacing it
+type saveGameMsg string
+
+func saveGame() tea.Cmd {
+	return func() tea.Msg {
+		return saveGameMsg("")
+	}
 }
 
-func (m model) saveSameDir() error {
+// saves the active game in the currently directory, and
+// returns a notification as confirmation
+func (m model) saveGameNotif() tea.Model {
+	p, err := m.saveGame()
+	if err != nil {
+		return notification("err: " + err.Error())
+	}
+
+	return notification("Saved game at " + p)
+}
+
+// saves the active game in the currently directory silently
+func (m model) saveGame() (string, error) {
 	g, ok := m.active.(game.Game)
 	if !ok {
-		return nil // TODO: possibly return an error here
+		return "", nil // TODO: possibly return an error here
 	}
 
 	cwd, err := os.Getwd()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	p := path.Join(cwd, "tetoris-save-"+time.Now().Format(time.DateTime)+".json")
-	return g.Save(p)
+	return p, g.Save(p)
 }

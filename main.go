@@ -24,8 +24,6 @@ type model struct {
 	termWidth  int
 }
 
-var newgame *game.Game // too lazy rn
-
 func main() {
 	// debug logging
 	if e := os.Getenv("DEBUG"); e != "" {
@@ -112,6 +110,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.active = tea.Model(msg)
 		m.overlay = nil
 		return m, m.active.Init()
+
+	case saveGameMsg:
+		m.overlay = m.saveGameNotif()
+		return m, nil
 
 	// Is it a key press?
 	case tea.KeyPressMsg:
