@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 	"runtime/debug"
 
@@ -58,7 +59,7 @@ func main() {
 func parseArgsGame() tea.Model {
 	replayy := flag.Bool("replay", false, "Load game as replay")
 	load := flag.String("load", "", "Load a savegame")
-	seed := flag.Int64("seed", 0, "Seed of game")
+	seed := flag.Int64("seed", rand.Int63(), "Seed of game")
 	width := flag.Int("width", 13, "Width of game")
 	height := flag.Int("height", 25, "Height of game")
 	flag.Parse()
