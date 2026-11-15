@@ -1,12 +1,10 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"os"
 	"runtime/debug"
 
@@ -15,37 +13,20 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/mifumofu/tetoris/game"
 	"github.com/mifumofu/tetoris/internal/keys"
-	"github.com/mifumofu/tetoris/replay"
 )
 
 type model struct {
-	game   game.Game
-	state  state
-	active tea.Model
+	active  tea.Model
+	overlay tea.Model
 
 	termHeight int
 	termWidth  int
 }
 
-type state int8
-
 var newgame *game.Game // too lazy rn
 
-const (
-	stateOverlay state = iota
-	stateGame
-	stateCustomGame
-	stateSaveGame
-	stateReplay
-)
-
-func changeState(s state) tea.Cmd {
-	return func() tea.Msg {
-		return s
-	}
-}
-
 func main() {
+	// debug logging
 	if e := os.Getenv("DEBUG"); e != "" {
 		f, err := tea.LogToFile(e, "")
 		if err != nil {
@@ -64,44 +45,15 @@ func main() {
 	}
 
 	// flags
-	var g game.Game
-	replayy := flag.Bool("replay", false, "Load game as replay")
-	load := flag.String("load", "", "Load a savegame")
-	seed := flag.Int64("seed", 0, "Seed of game")
-	width := flag.Int("width", 13, "Width of game")
-	height := flag.Int("height", 25, "Height of game")
+	//	replayy := flag.Bool("replay", false, "Load game as replay")
+	//	load := flag.String("load", "", "Load a savegame")
+	//	seed := flag.Int64("seed", 0, "Seed of game")
+	//	width := flag.Int("width", 13, "Width of game")
+	//	height := flag.Int("height", 25, "Height of game")
 	flag.Parse()
 
-	// default game from args
-	if *seed == 0 {
-		seed = new(rand.Int63())
-	}
-	g = game.NewGame(
-		game.WithWidth(*width),
-		game.WithHeight(*height),
-		game.WithSeed(*seed),
-	)
-
-	// load game
-	if *load != "" {
-		log.Printf("loading savegame at %v", *load)
-		var err error
-		g, err = game.LoadGame(*load)
-		if err != nil {
-			panic(err)
-		}
-	}
-
 	m := model{
-		game:  g,
-		state: stateGame,
-	}
-
-	if *replayy {
-		m.active = replay.NewReplay(m.game)
-		m.state = stateReplay
-	} else {
-		m.active = m.game // start game immediately
+		active: game.NewGame(),
 	}
 
 	p := tea.NewProgram(m)
@@ -116,6 +68,14 @@ func (m model) Init() tea.Cmd {
 	return m.active.Init()
 }
 
+type updateActive tea.Model
+
+func updateActiveModel(m tea.Model) tea.Cmd {
+	return func() tea.Msg {
+		return updateActive(m)
+	}
+}
+
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
@@ -124,69 +84,44 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.termWidth = msg.Width
 		log.Printf("changed window size to x%v y%v", m.termWidth, m.termHeight)
 
-	case state:
-		log.Println("changing state ", msg)
-		switch msg {
-		case stateOverlay:
-			m.active = newMenu()
-			m.state = stateOverlay
-			return m, m.active.Init()
+	case updateActive:
+		m.active = tea.Model(msg)
+		m.overlay = nil
+		return m, m.active.Init()
 
-		case stateGame:
-			if newgame != nil {
-				m.game = *newgame
-				newgame = nil
-			}
-			m.active = m.game
-			m.state = stateGame
-			return m, m.game.Init()
-
-		case stateCustomGame:
-			m.active = newCustomGame()
-			m.state = stateCustomGame
-			return m, m.active.Init()
-
-		case stateSaveGame:
-			err := m.saveSameDir()
-			if err != nil {
-				panic(err)
-			}
-			m.state = stateOverlay
-		}
 	// Is it a key press?
 	case tea.KeyPressMsg:
 		log.Println("press", msg)
 		switch {
 		case key.Matches(msg, keys.KeyMap.Pause):
-			switch m.state {
-
-			case stateGame:
-				// we need to set game to the active modal, as otherwise we end up
-				// with the cursor resetting to the cursor resetting to the original position
-				// and form while blocks stay the same (pointers)
-				g, ok := m.active.(game.Game)
-				if !ok {
-					panic(errors.New("Active model not Game even though state == game"))
-				}
-				m.game = g
-				return m, changeState(stateOverlay)
-
-			case stateOverlay:
-				return m, changeState(stateGame)
+			if m.overlay == nil {
+				m.overlay = newMenu()
+			} else {
+				m.overlay = nil
 			}
+			return m, nil
 
 		case key.Matches(msg, keys.KeyMap.Quit):
 			return m, tea.Quit
 
+		// TODO: find a way to not duplicate this code
 		default:
 			var acmd tea.Cmd
-			m.active, acmd = m.active.Update(msg)
+			if m.overlay == nil {
+				m.active, acmd = m.active.Update(msg)
+			} else {
+				m.overlay, acmd = m.overlay.Update(msg)
+			}
 			return m, acmd
 		}
 
 	default:
 		var acmd tea.Cmd
-		m.active, acmd = m.active.Update(msg)
+		if m.overlay == nil {
+			m.active, acmd = m.active.Update(msg)
+		} else {
+			m.overlay, acmd = m.overlay.Update(msg)
+		}
 		return m, acmd
 	}
 
@@ -199,8 +134,8 @@ func (m model) View() tea.View {
 	content := m.active.View().Content
 
 	// place menu over game
-	if m.state == stateOverlay {
-		content = m.game.View().Content
+	if m.overlay != nil {
+		content = m.active.View().Content
 	}
 
 	layout := lipgloss.Place(
@@ -213,11 +148,11 @@ func (m model) View() tea.View {
 			Render(content),
 	)
 
-	if m.state == stateOverlay {
+	if m.overlay != nil {
 		comp := lipgloss.NewCompositor(lipgloss.NewLayer(layout))
 
-		// overlay active layer
-		lm := lipgloss.NewLayer(m.active.View().Content)
+		// overlay overlay layer
+		lm := lipgloss.NewLayer(m.overlay.View().Content)
 		posx := m.termWidth/2 - lm.Width()/2
 		posy := m.termHeight/2 - lm.Height()/2
 

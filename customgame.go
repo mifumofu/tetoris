@@ -118,14 +118,14 @@ func (m customGame) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		blocks = append(blocks, m.game.Shapes[i])
 	}
 
-	newgame = new(game.NewGame(
+	g := game.NewGame(
 		game.WithSeed(int64(seed)),
 		game.WithWidth(w),
 		game.WithHeight(h),
 		game.WithBlocks(blocks),
-	))
+	)
 
-	return m, changeState(stateGame)
+	return g, g.Init()
 }
 
 func (m customGame) View() tea.View {

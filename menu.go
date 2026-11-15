@@ -27,7 +27,6 @@ func newMenu() menu {
 			"Resume",
 			"New Game",
 			"Custom Game",
-			"Save",
 			"Quit",
 		},
 	}
@@ -55,17 +54,13 @@ func (m menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			log.Printf("got item '%v'", m.items[m.cursor])
 			switch m.items[m.cursor] {
 			case "Resume":
-				return m, changeState(stateGame)
+				return nil, nil
 
 			case "New Game":
-				newgame = new(game.NewGame())
-				return m, changeState(stateGame)
+				return nil, updateActiveModel(game.NewGame())
 
 			case "Custom Game":
-				return m, changeState(stateCustomGame)
-
-			case "Save":
-				return m, changeState(stateSaveGame)
+				return nil, updateActiveModel(newCustomGame())
 
 			case "Quit":
 				return m, tea.Quit
@@ -104,12 +99,23 @@ func (m menu) View() tea.View {
 	)
 }
 
+// Checks if the active model is a game.Game
+func (m model) activeGame() bool {
+	_, ok := m.active.(game.Game)
+	return ok
+}
+
 func (m model) saveSameDir() error {
+	g, ok := m.active.(game.Game)
+	if !ok {
+		return nil // TODO: possibly return an error here
+	}
+
 	cwd, err := os.Getwd()
 	if err != nil {
 		return err
 	}
 
 	p := path.Join(cwd, "tetoris-save-"+time.Now().Format(time.DateTime)+".json")
-	return m.game.Save(p)
+	return g.Save(p)
 }
