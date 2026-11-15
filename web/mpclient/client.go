@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"uuid"
 
+	tea "charm.land/bubbletea/v2"
 	"github.com/gorilla/websocket"
 	"github.com/mifumofu/tetoris/game"
 )
@@ -15,10 +17,27 @@ import (
 var Server = "127.0.0.1:8080"
 
 type MpGame struct {
-	game game.Game
-	done chan struct{}
-	conn *websocket.Conn
+	game    game.Game
+	players []uuid.UUID
+
+	done  chan struct{}
+	conn  *websocket.Conn
+	state state
 }
+
+type GameMpUpdate struct {
+	Players []uuid.UUID
+	Game    game.Game
+	Start   bool
+}
+
+type state int8
+
+const (
+	StateLobby state = iota
+	StatePlaying
+	StateEnd
+)
 
 // creates a new game and joins it
 func Create() (MpGame, error) {
@@ -32,7 +51,7 @@ func Create() (MpGame, error) {
 
 // creates a new game
 func create() (string, error) {
-	u := url.URL{Scheme: "https", Host: Server, Path: "/mp/create"}
+	u := url.URL{Scheme: "http", Host: Server, Path: "/mp/create"}
 	res, err := http.Post(u.String(), "text/plain", nil)
 	if err != nil {
 		return "", err
@@ -57,8 +76,9 @@ func Connect(code string) (MpGame, error) {
 
 	// deal with messages
 	g := MpGame{
-		conn: conn,
-		done: done,
+		conn:  conn,
+		done:  done,
+		state: StateLobby,
 	}
 
 	g.game = game.NewGame(game.WithActionListener(g.actionListener))
@@ -68,16 +88,17 @@ func Connect(code string) (MpGame, error) {
 	return g, nil
 }
 
+type wsUpdate []byte
+
 // receives messages
-func (g MpGame) receive() {
-	defer close(g.done)
-	for {
+func (g *MpGame) receive() tea.Cmd {
+	return func() tea.Msg {
 		_, message, err := g.conn.ReadMessage()
 		if err != nil {
-			log.Println("read:", err)
-			return
+			panic(err)
 		}
-		log.Printf("recv: %s", message)
+
+		return wsUpdate(message)
 	}
 }
 

@@ -4,11 +4,9 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"uuid"
 
 	"github.com/gorilla/websocket"
-	"github.com/mifumofu/tetoris/game"
 )
 
 var (
@@ -34,6 +32,13 @@ func handleMpConnections(w http.ResponseWriter, r *http.Request) {
 	// limit to 2 people in a game
 	if len(g.Players) >= g.MaxPlayers {
 		slog.Warn("Rejecting connection as game at max players", "ip", r.RemoteAddr)
+		w.WriteHeader(http.StatusServiceUnavailable)
+		return
+	}
+
+	// do not let player join if not in lobby
+	if g.state != StateLobby {
+		slog.Warn("Rejecting connection as game not in lobby", "ip", r.RemoteAddr)
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return
 	}
@@ -64,6 +69,9 @@ func handleMpConnections(w http.ResponseWriter, r *http.Request) {
 		ws.Close()
 	}()
 
+	// send update in game state to players
+	g.sendLobbyUpdate(false)
+
 	// handle incoming messages
 	handleMpMessages(ws, c, g)
 }
@@ -85,35 +93,16 @@ func handleMpMessages(ws *websocket.Conn, c client, g *MpGame) {
 			break
 		}
 
-		a, err := parseMpMessage(msg)
-		if err != nil {
-			c.logger.Warn("failed to parse message", "err", err)
-			g.DisconnectClient(c)
-			break
+		var cont bool
+		switch g.state {
+		case StateLobby:
+			cont = handleMpLobbyMessages(msg, c, g)
+		case StatePlaying:
+			cont = handleMpPlayingMsgs(msg, c, g)
 		}
 
-		c.logger.Debug("msg", "action", a.String())
-
-		// Broadcast message to all clients
-		g.sendAllUpdate(c.ID, a)
+		if cont == false {
+			break
+		}
 	}
-}
-
-// clients should be sending the int of the game.Actions enum action
-// they are performing in their game
-func parseMpMessage(b []byte) (game.Action, error) {
-	i, err := strconv.Atoi(string(b))
-	if err != nil {
-		return game.ActionDown, ErrInvalidMessage
-	}
-
-	a := game.Action(i)
-
-	// check if valid
-	// TODO: find a better way to see if action is valid
-	if i > int(game.ActionInstadown) || i < 0 {
-		return a, ErrInvalidMessage
-	}
-
-	return a, nil
 }

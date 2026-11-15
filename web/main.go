@@ -4,6 +4,10 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"uuid"
+
+	"github.com/gorilla/websocket"
+	"github.com/mifumofu/tetoris/game"
 )
 
 func main() {
@@ -27,4 +31,30 @@ func main() {
 	if err != nil {
 		slog.Error("ListenAndServe", "err", err)
 	}
+}
+
+var games = make(map[GameID]*MpGame)
+
+type GameID string
+type MpGame struct {
+	id          GameID
+	state       state
+	MaxPlayers  int
+	Players     map[client]bool
+	InitialGame game.Game
+}
+
+type state int8
+
+const (
+	StateLobby state = iota
+	StatePlaying
+	StateEnd
+)
+
+type client struct {
+	ID      uuid.UUID
+	conn    *websocket.Conn
+	request *http.Request
+	logger  *slog.Logger
 }

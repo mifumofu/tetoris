@@ -10,13 +10,35 @@ func (m *MpGame) actionListener(a game.Action) {
 }
 
 func (m MpGame) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	return m.game.Update(msg)
+	switch m.state {
+	case StateLobby:
+		return m.LobbyUpdate(msg)
+	case StatePlaying:
+		a, b := m.game.Update(msg)
+
+		c, ok := a.(game.Game)
+		if !ok {
+			panic("Game did not return a game model")
+		}
+
+		m.game = c
+		return m, b
+	}
+
+	return m, nil
 }
 
 func (m MpGame) Init() tea.Cmd {
-	return m.game.Init()
+	return m.receive()
 }
 
 func (m MpGame) View() tea.View {
-	return m.game.View()
+	switch m.state {
+	case StateLobby:
+		return m.LobbyView()
+	case StatePlaying:
+		return m.game.View()
+	}
+
+	panic("Invalid state for mpclient")
 }
