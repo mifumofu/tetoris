@@ -13,6 +13,7 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/mifumofu/tetoris/game"
 	"github.com/mifumofu/tetoris/internal/keys"
+	"github.com/mifumofu/tetoris/replay"
 )
 
 type model struct {
@@ -45,15 +46,8 @@ func main() {
 	}
 
 	// flags
-	//	replayy := flag.Bool("replay", false, "Load game as replay")
-	//	load := flag.String("load", "", "Load a savegame")
-	//	seed := flag.Int64("seed", 0, "Seed of game")
-	//	width := flag.Int("width", 13, "Width of game")
-	//	height := flag.Int("height", 25, "Height of game")
-	flag.Parse()
-
 	m := model{
-		active: game.NewGame(),
+		active: parseArgsGame(),
 	}
 
 	p := tea.NewProgram(m)
@@ -61,6 +55,36 @@ func main() {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
 	}
+}
+
+func parseArgsGame() tea.Model {
+	replayy := flag.Bool("replay", false, "Load game as replay")
+	load := flag.String("load", "", "Load a savegame")
+	seed := flag.Int64("seed", 0, "Seed of game")
+	width := flag.Int("width", 13, "Width of game")
+	height := flag.Int("height", 25, "Height of game")
+	flag.Parse()
+
+	// handle loading games
+	if *load != "" {
+		log.Printf("Loading savegame at %v", *load)
+		g, err := game.LoadGame(*load)
+		if err != nil {
+			panic(err)
+		}
+
+		if *replayy {
+			return replay.NewReplay(g)
+		}
+		return g
+	}
+
+	// create new custom game with cli args
+	return game.NewGame(
+		game.WithWidth(*width),
+		game.WithHeight(*height),
+		game.WithSeed(*seed),
+	)
 }
 
 func (m model) Init() tea.Cmd {
