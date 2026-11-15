@@ -160,11 +160,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() tea.View {
 	content := m.active.View().Content
 
-	// place menu over game
-	if m.overlay != nil {
-		content = m.active.View().Content
-	}
-
 	layout := lipgloss.Place(
 		m.termWidth,
 		m.termHeight,
@@ -175,10 +170,11 @@ func (m model) View() tea.View {
 			Render(content),
 	)
 
+	// draw "overlay" model over "active" model
 	if m.overlay != nil {
 		comp := lipgloss.NewCompositor(lipgloss.NewLayer(layout))
 
-		// overlay overlay layer
+		// center overlayed model
 		lm := lipgloss.NewLayer(m.overlay.View().Content)
 		posx := m.termWidth/2 - lm.Width()/2
 		posy := m.termHeight/2 - lm.Height()/2
