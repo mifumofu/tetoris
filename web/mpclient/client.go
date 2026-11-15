@@ -49,7 +49,7 @@ func Connect(code string) (MpGame, error) {
 	log.Printf("connecting to %s", u.String())
 
 	// dial websocket
-	conn, _, err := websocket.DefaultDialer.Dial(Server, nil)
+	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
 		return MpGame{}, err
 	}
