@@ -1,4 +1,8 @@
-out
-tetoris
-*.log
-*.json
+*
+!*.go
+!go.mod
+!go.sum
+!screenshot.webp
+!LICENSE
+!README.md
+!build.sh
