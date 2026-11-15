@@ -1,4 +1,4 @@
-package main
+package multiplayer
 
 import (
 	"errors"
@@ -14,21 +14,11 @@ var (
 )
 
 // game over websocket
-
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true }, // Allow all connections
 }
 
-func handleMpConnections(w http.ResponseWriter, r *http.Request) {
-	// get game provided in websocket
-	id := r.PathValue("id")
-	g, exists := games[GameID(id)]
-	if !exists {
-		slog.Warn("Non existant game connect attempt", "ip", r.RemoteAddr)
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
+func ConnectWS(g *MpGame, w http.ResponseWriter, r *http.Request) {
 	// limit to 2 people in a game
 	if len(g.Players) >= g.MaxPlayers {
 		slog.Warn("Rejecting connection as game at max players", "ip", r.RemoteAddr)

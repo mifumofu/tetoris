@@ -3,6 +3,7 @@ package mpclient
 import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/mifumofu/tetoris/game"
+	"github.com/mifumofu/tetoris/web/multiplayer"
 )
 
 func (m *MpGame) actionListener(a game.Action) {
@@ -11,9 +12,10 @@ func (m *MpGame) actionListener(a game.Action) {
 
 func (m MpGame) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch m.state {
-	case StateLobby:
+	case multiplayer.StateLobby:
 		return m.LobbyUpdate(msg)
-	case StatePlaying:
+
+	case multiplayer.StatePlaying:
 		a, b := m.game.Update(msg)
 
 		c, ok := a.(game.Game)
@@ -34,9 +36,9 @@ func (m MpGame) Init() tea.Cmd {
 
 func (m MpGame) View() tea.View {
 	switch m.state {
-	case StateLobby:
+	case multiplayer.StateLobby:
 		return m.LobbyView()
-	case StatePlaying:
+	case multiplayer.StatePlaying:
 		return m.game.View()
 	}
 

@@ -11,6 +11,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/gorilla/websocket"
 	"github.com/mifumofu/tetoris/game"
+	"github.com/mifumofu/tetoris/web/multiplayer"
 )
 
 // server
@@ -22,22 +23,8 @@ type MpGame struct {
 
 	done  chan struct{}
 	conn  *websocket.Conn
-	state state
+	state multiplayer.State
 }
-
-type GameMpUpdate struct {
-	Players []uuid.UUID
-	Game    game.Game
-	Start   bool
-}
-
-type state int8
-
-const (
-	StateLobby state = iota
-	StatePlaying
-	StateEnd
-)
 
 // creates a new game and joins it
 func Create() (MpGame, error) {
@@ -78,7 +65,7 @@ func Connect(code string) (MpGame, error) {
 	g := MpGame{
 		conn:  conn,
 		done:  done,
-		state: StateLobby,
+		state: multiplayer.StateLobby,
 	}
 
 	g.game = game.NewGame(game.WithActionListener(g.actionListener))

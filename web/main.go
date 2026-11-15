@@ -4,10 +4,8 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"uuid"
 
-	"github.com/gorilla/websocket"
-	"github.com/mifumofu/tetoris/game"
+	"github.com/mifumofu/tetoris/web/multiplayer"
 )
 
 func main() {
@@ -33,28 +31,25 @@ func main() {
 	}
 }
 
-var games = make(map[GameID]*MpGame)
+var games = make(map[multiplayer.GameID]*multiplayer.MpGame)
 
-type GameID string
-type MpGame struct {
-	id          GameID
-	state       state
-	MaxPlayers  int
-	Players     map[client]bool
-	InitialGame game.Game
+// create new game
+func handleCreateGame(w http.ResponseWriter, r *http.Request) {
+	i, g := multiplayer.NewGame()
+
+	slog.Info("Created new game", "id", i)
+	games[i] = g
+	w.Write([]byte(i))
 }
 
-type state int8
+func handleMpConnections(w http.ResponseWriter, r *http.Request) {
+	id := r.PathValue("id")
+	g, exists := games[multiplayer.GameID(id)]
+	if !exists {
+		slog.Warn("Non existant game connect attempt", "ip", r.RemoteAddr)
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 
-const (
-	StateLobby state = iota
-	StatePlaying
-	StateEnd
-)
-
-type client struct {
-	ID      uuid.UUID
-	conn    *websocket.Conn
-	request *http.Request
-	logger  *slog.Logger
+	multiplayer.ConnectWS(g, w, r)
 }

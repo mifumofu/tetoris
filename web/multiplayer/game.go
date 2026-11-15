@@ -1,13 +1,39 @@
-package main
+package multiplayer
 
 import (
 	"log/slog"
 	"math/rand"
 	"net/http"
 	"time"
+	"uuid"
 
+	"github.com/gorilla/websocket"
 	"github.com/mifumofu/tetoris/game"
 )
+
+type GameID string
+type MpGame struct {
+	id          GameID
+	state       State
+	MaxPlayers  int
+	Players     map[client]bool
+	InitialGame game.Game
+}
+
+type State int8
+
+const (
+	StateLobby State = iota
+	StatePlaying
+	StateEnd
+)
+
+type client struct {
+	ID      uuid.UUID
+	conn    *websocket.Conn
+	request *http.Request
+	logger  *slog.Logger
+}
 
 func (g *MpGame) DisconnectClient(c client) {
 	c.conn.Close()
@@ -39,22 +65,13 @@ func newGameId() GameID {
 	return GameID(alphanumericRand(6))
 }
 
-func newGame() (GameID, *MpGame) {
+func NewGame() (GameID, *MpGame) {
 	return newGameId(), new(MpGame{
 		MaxPlayers:  2,
 		Players:     make(map[client]bool),
 		state:       StateLobby,
 		InitialGame: game.NewGame(),
 	})
-}
-
-// create new game
-func handleCreateGame(w http.ResponseWriter, r *http.Request) {
-	i, g := newGame()
-
-	slog.Info("Created new game", "id", i)
-	games[i] = g
-	w.Write([]byte(i))
 }
 
 // sends a message to all players in a game

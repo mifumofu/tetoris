@@ -6,3 +6,12 @@
 !LICENSE
 !README.md
 !build.sh
+
+!game/*.go
+!replay/*.go
+!web/*.go
+!web/client/*.go
+!web/multiplayer/*.go
+!internal/*.go
+!internal/keys/*.go
+!internal/txt/*.go
