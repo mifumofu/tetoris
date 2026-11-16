@@ -13,9 +13,6 @@ import (
 	"github.com/mifumofu/tetoris/web/multiplayer"
 )
 
-// server
-var Server = "127.0.0.1:8080"
-
 type MpGame struct {
 	game    game.Game
 	players map[multiplayer.PlayerID]game.Game
@@ -28,19 +25,19 @@ type MpGame struct {
 }
 
 // creates a new game and joins it
-func Create() (MpGame, error) {
-	code, err := create()
+func Create(server url.URL) (MpGame, error) {
+	code, err := create(server)
 	if err != nil {
 		return MpGame{}, err
 	}
 
-	return Connect(code)
+	return Connect(server, code)
 }
 
 // creates a new game
-func create() (string, error) {
-	u := url.URL{Scheme: "http", Host: Server, Path: "/mp/create"}
-	res, err := http.Post(u.String(), "text/plain", nil)
+func create(server url.URL) (string, error) {
+	server.Path = "/mp/create"
+	res, err := http.Post(server.String(), "text/plain", nil)
 	if err != nil {
 		return "", err
 	}
@@ -50,13 +47,14 @@ func create() (string, error) {
 }
 
 // connects to a game
-func Connect(code string) (MpGame, error) {
+func Connect(server url.URL, code string) (MpGame, error) {
 	// connection url
-	u := url.URL{Scheme: "ws", Host: Server, Path: "/mp/" + code + "/ws"}
-	log.Printf("connecting to %s", u.String())
+	server.Path = "/mp/" + code + "/ws"
+	server.Scheme = "ws"
+	log.Printf("connecting to %s", server.String())
 
 	// dial websocket
-	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	conn, _, err := websocket.DefaultDialer.Dial(server.String(), nil)
 	if err != nil {
 		return MpGame{}, err
 	}

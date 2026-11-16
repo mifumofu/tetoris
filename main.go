@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"math/rand"
+	"net/url"
 	"os"
 	"runtime/debug"
 
@@ -65,6 +66,7 @@ func parseArgsGame() tea.Model {
 	height := flag.Int("height", 25, "Height of game")
 
 	mp := flag.Bool("multiplayer", false, "Join a multiplayer game.")
+	server := flag.String("server", "http://127.0.0.1:8080", "Server to connect to")
 	code := flag.String("code", "", "Multiplayer game to connect to, creates if not provided")
 	flag.Parse()
 
@@ -83,8 +85,13 @@ func parseArgsGame() tea.Model {
 	}
 
 	if *mp {
+		u, err := url.Parse(*server)
+		if err != nil {
+			panic(err)
+		}
+
 		if *code == "" {
-			g, err := mpclient.Create()
+			g, err := mpclient.Create(*u)
 			if err != nil {
 				panic(err)
 			}
@@ -92,7 +99,7 @@ func parseArgsGame() tea.Model {
 
 		} else {
 
-			g, err := mpclient.Connect(*code)
+			g, err := mpclient.Connect(*u, *code)
 			if err != nil {
 				panic(err)
 			}
