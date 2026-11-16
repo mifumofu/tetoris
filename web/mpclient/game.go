@@ -3,6 +3,7 @@ package mpclient
 import (
 	"bytes"
 	"encoding/gob"
+	"fmt"
 	"io"
 	"log"
 	"strings"
@@ -91,6 +92,15 @@ func (m MpGame) sideBar() string {
 	b.WriteString(txt.Logo)
 	b.WriteString("\nMultiplayer        \nCode: ")
 	b.WriteString(string(m.id))
+
+	// get players and sort them by scores
+	b.WriteString("\nYou are ")
+	b.WriteString(m.selfId.String())
+	b.WriteString("\n\nPlayers:")
+	for name, g := range m.players {
+		fmt.Fprintf(&b, "\n%v %v", name, g.Score())
+	}
+
 	return b.String()
 }
 

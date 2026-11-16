@@ -11,6 +11,10 @@ const (
 	stateEnd
 )
 
+func (m Game) Score() int {
+	return m.score
+}
+
 func (m Game) Get(p position) (block, bool) {
 	// block does not exist if its out of bounds
 	if p.X >= m.Width || p.X < 0 || p.Y >= m.Height || p.Y < 0 {
