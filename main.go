@@ -15,6 +15,7 @@ import (
 	"github.com/mifumofu/tetoris/game"
 	"github.com/mifumofu/tetoris/internal/keys"
 	"github.com/mifumofu/tetoris/replay"
+	"github.com/mifumofu/tetoris/web/mpclient"
 )
 
 type model struct {
@@ -62,6 +63,9 @@ func parseArgsGame() tea.Model {
 	seed := flag.Int64("seed", rand.Int63(), "Seed of game")
 	width := flag.Int("width", 13, "Width of game")
 	height := flag.Int("height", 25, "Height of game")
+
+	mp := flag.Bool("multiplayer", false, "Join a multiplayer game.")
+	code := flag.String("code", "", "Multiplayer game to connect to, creates if not provided")
 	flag.Parse()
 
 	// handle loading games
@@ -76,6 +80,24 @@ func parseArgsGame() tea.Model {
 			return replay.NewReplay(g)
 		}
 		return g
+	}
+
+	if *mp {
+		if *code == "" {
+			g, err := mpclient.Create()
+			if err != nil {
+				panic(err)
+			}
+			return g
+
+		} else {
+
+			g, err := mpclient.Connect(*code)
+			if err != nil {
+				panic(err)
+			}
+			return g
+		}
 	}
 
 	// create new custom game with cli args
