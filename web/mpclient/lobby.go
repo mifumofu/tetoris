@@ -51,10 +51,11 @@ func (m MpGame) LobbyView() tea.View {
 	fmt.Fprintf(&b, "\nKill line: %v", m.game.KillLine)
 
 	b.WriteString("\n\n> Players")
-	fmt.Fprintf(&b, "\nWaiting for %v more players to join", 2-len(m.players))
+	fmt.Fprintf(&b, "\nYou are %v.", m.selfId)
 	for x := range m.players {
 		fmt.Fprintf(&b, "\n- %v", x.String())
 	}
+	fmt.Fprintf(&b, "\n\nWaiting for %v more players to join", 2-len(m.players))
 
 	return tea.NewView(b.String())
 }
