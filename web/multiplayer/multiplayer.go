@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
-	"uuid"
 
 	"github.com/gorilla/websocket"
 )
@@ -40,7 +39,7 @@ func ConnectWS(g *MpGame, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cid := uuid.NewV4()
+	cid := newPlayerId()
 	c := client{
 		send:    make(chan []byte),
 		conn:    ws,

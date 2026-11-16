@@ -5,7 +5,6 @@ import (
 	"encoding/gob"
 	"io"
 	"strconv"
-	"uuid"
 
 	"github.com/gorilla/websocket"
 	"github.com/mifumofu/tetoris/game"
@@ -13,18 +12,18 @@ import (
 
 // sending data
 type MpUpdate struct {
-	PlayerID uuid.UUID
+	PlayerID PlayerID
 	Action   game.Action
 }
 
 // sends an MpUpdate to all players in a game
-func (g *MpGame) sendAllUpdate(id uuid.UUID, action game.Action) {
+func (g *MpGame) sendAllUpdate(id PlayerID, action game.Action) {
 	g.sendAll(websocket.BinaryMessage, encodeAction(id, action))
 }
 
 // encodes an action for sending over a websocket
 // returns encoding in bytes
-func encodeAction(id uuid.UUID, action game.Action) []byte {
+func encodeAction(id PlayerID, action game.Action) []byte {
 	var buf bytes.Buffer
 	encodeActionWriter(&buf, id, action)
 	return buf.Bytes()
@@ -32,7 +31,7 @@ func encodeAction(id uuid.UUID, action game.Action) []byte {
 
 // encodes an action for sending over a websocket
 // uses an io.Writer
-func encodeActionWriter(w io.Writer, id uuid.UUID, action game.Action) {
+func encodeActionWriter(w io.Writer, id PlayerID, action game.Action) {
 	enc := gob.NewEncoder(w)
 	enc.Encode(MpUpdate{id, action})
 }

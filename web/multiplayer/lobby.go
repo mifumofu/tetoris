@@ -3,16 +3,15 @@ package multiplayer
 import (
 	"encoding/json"
 	"log/slog"
-	"uuid"
 
 	"github.com/mifumofu/tetoris/game"
 )
 
 type GameMpUpdate struct {
-	Players []uuid.UUID
+	Players []PlayerID
 	Game    game.Game
 	Start   bool
-	YourID  uuid.UUID
+	YourID  PlayerID
 }
 
 // start a game
@@ -26,8 +25,8 @@ func (g *MpGame) sendLobbyUpdate(start bool) {
 	for p := range g.Players {
 		b, err := json.Marshal(GameMpUpdate{
 			Game: g.InitialGame,
-			Players: func() []uuid.UUID {
-				var ids []uuid.UUID
+			Players: func() []PlayerID {
+				var ids []PlayerID
 				for i := range g.Players {
 					ids = append(ids, i.ID)
 				}
@@ -45,21 +44,6 @@ func (g *MpGame) sendLobbyUpdate(start bool) {
 		// send message
 		p.send <- b
 	}
-}
-
-// encodes a lobby update
-func (g *MpGame) encodeLobbyUpdate(start bool) ([]byte, error) {
-	return json.Marshal(GameMpUpdate{
-		Game: g.InitialGame,
-		Players: func() []uuid.UUID {
-			var ids []uuid.UUID
-			for i := range g.Players {
-				ids = append(ids, i.ID)
-			}
-			return ids
-		}(),
-		Start: start,
-	})
 }
 
 // handles websocket messages when state == lobby

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"uuid"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/mifumofu/tetoris/game"
@@ -23,7 +22,7 @@ func (m MpGame) LobbyUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.game = mpg.Game
 		m.selfId = mpg.YourID
 
-		m.players = make(map[uuid.UUID]game.Game)
+		m.players = make(map[multiplayer.PlayerID]game.Game)
 		for _, i := range mpg.Players {
 			m.players[i] = m.game
 		}

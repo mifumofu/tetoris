@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"uuid"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/gorilla/websocket"
@@ -19,8 +18,8 @@ var Server = "127.0.0.1:8080"
 
 type MpGame struct {
 	game    game.Game
-	players map[uuid.UUID]game.Game
-	selfId  uuid.UUID
+	players map[multiplayer.PlayerID]game.Game
+	selfId  multiplayer.PlayerID
 
 	done  chan struct{}
 	conn  *websocket.Conn

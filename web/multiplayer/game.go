@@ -4,13 +4,13 @@ import (
 	"log/slog"
 	"math/rand"
 	"net/http"
-	"uuid"
 
 	"github.com/gorilla/websocket"
 	"github.com/mifumofu/tetoris/game"
 )
 
 type GameID string
+type PlayerID string
 type MpGame struct {
 	id          GameID
 	state       State
@@ -28,7 +28,7 @@ const (
 )
 
 type client struct {
-	ID      uuid.UUID
+	ID      PlayerID
 	send    chan []byte
 	conn    *websocket.Conn
 	request *http.Request
@@ -62,6 +62,98 @@ func alphanumericRand(l int) string {
 
 func newGameId() GameID {
 	return GameID(alphanumericRand(6))
+}
+
+func newPlayerId() PlayerID {
+	names := []string{
+		"apple",
+		"apricot",
+		"avocado",
+		"banana",
+		"blackberry",
+		"blackcurrant",
+		"blueberry",
+		"boysenberry",
+		"breadfruit",
+		"catmon",
+		"cempedak",
+		"cherimoya",
+		"cherry",
+		"citron",
+		"cloudberry",
+		"cocoa",
+		"coconut",
+		"cranberry",
+		"currant",
+		"damson",
+		"date",
+		"dragonfruit",
+		"durian",
+		"elderberry",
+		"feijoa",
+		"fig",
+		"gac",
+		"gooseberry",
+		"grape",
+		"raisin",
+		"grapefruit",
+		"guava",
+		"guarana",
+		"honeyberry",
+		"huckleberry",
+		"jackfruit",
+		"kiwano",
+		"kiwifruit",
+		"lemon",
+		"lime",
+		"loganberry",
+		"lychee",
+		"macopa",
+		"mango",
+		"mangosteen",
+		"medlar",
+		"melon",
+		"cantaloupe",
+		"honeydew",
+		"watermelon",
+		"mohsina",
+		"mulberry",
+		"nance",
+		"nectarine",
+		"orange",
+		"clementine",
+		"mandarine",
+		"tangerine",
+		"papaya",
+		"passionfruit",
+		"pawpaw",
+		"peach",
+		"pear",
+		"persimmon",
+		"pineapple",
+		"pineberry",
+		"plantain",
+		"plum",
+		"prune",
+		"plumcot",
+		"pomegranate",
+		"pomelo",
+		"quince",
+		"raspberry",
+		"salmonberry",
+		"rambutan",
+		"redcurrant",
+		"strawberry",
+		"tayberry",
+		"thimbleberry",
+		"ximenia",
+		"yuzu",
+	}
+	return PlayerID(names[rand.Intn(len(names))])
+}
+
+func (p PlayerID) String() string {
+	return string(p)
 }
 
 func NewGame() (GameID, *MpGame) {
