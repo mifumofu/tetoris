@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"log/slog"
 	"net/http"
 	"os"
@@ -8,8 +9,10 @@ import (
 	"github.com/mifumofu/tetoris/web/multiplayer"
 )
 
-func main() {
+//go:embed index.html
+var indexFile []byte
 
+func main() {
 	if os.Getenv("DEBUG") != "" {
 		slog.SetLogLoggerLevel(slog.LevelDebug)
 		slog.Info("Enabled debug logging")
@@ -20,6 +23,7 @@ func main() {
 		)
 	}
 
+	http.HandleFunc("GET /{$}", handleRoot)
 	http.HandleFunc("/mp/{id}/ws", handleMpConnections)
 	http.HandleFunc("/mp/create", handleCreateGame)
 
@@ -32,6 +36,11 @@ func main() {
 }
 
 var games = make(map[multiplayer.GameID]*multiplayer.MpGame)
+
+func handleRoot(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(200)
+	w.Write(indexFile)
+}
 
 // create new game
 func handleCreateGame(w http.ResponseWriter, r *http.Request) {

@@ -1,5 +1,6 @@
 *
 !*.go
+!*.html
 !go.mod
 !go.sum
 !screenshot.webp

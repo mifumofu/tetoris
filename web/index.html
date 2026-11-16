@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width">
+		<meta name="text-scale" content="scale">
+		<meta name="color-scheme" content="light dark">
+		<title>tetoris</title>
+	</head>
+
+	<body>
+		<main>
+      <article>
+        <h1>テトリス tetoris</h1>
+        <p>You have reached a <a href="https://github.com/mifumofu/tetoris">tetoris</a> server. In order to connect from your <a href="https://github.com/mifumofu/tetoris/releases">local client</a>, use the <code>--server</code> flag.</p>
+      </article>
+    </main>
+	</body>
+</html>
+
+<style>
+:root {
+  --text: black;
+  --accent: #EF59EA;
+  --background: rgba(254, 234, 251, 255);
+  --overlay: rgba(255, 248, 254, 255);
+  --radius: 0.3em;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: white;
+    --background: black;
+    --overlay: rgba(20, 20, 20, 255);
+    --accent: #FFAAFE;
+  }
+}
+
+body {
+  margin: auto;
+  width: 40rem;
+  align-content: center;
+  height: 100vh;
+
+  color: var(--text);
+  background-color: var(--background);
+  font-family: "Arial Rounded MT", "Hiragino Maru Gothic ProN", sans-serif;
+}
+
+h1::before,
+h2::before,
+h3::before,
+h4::before,
+h5::before {
+  content: "*";
+  vertical-align: sub;
+  font-size: 1em;
+  margin-right: 0.2em;
+  margin-left: -1.4em;
+
+  padding: 0.3em;
+  border-radius: var(--radius);
+  color: var(--accent);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent);
+  text-decoration: underline 0.1rem var(--accent);
+}
+</style>
