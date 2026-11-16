@@ -43,7 +43,8 @@ func (m MpGame) LobbyView() tea.View {
 	var b strings.Builder
 
 	b.WriteString("# Multiplayer game")
-	b.WriteString("\n> Settings")
+	fmt.Fprintf(&b, "\nJoin code: %v", m.id)
+	b.WriteString("\n\n> Settings")
 
 	fmt.Fprintf(&b, "\nSeed: %v", m.game.Seed)
 	fmt.Fprintf(&b, "\nWidth: %v", m.game.Width)
@@ -51,6 +52,7 @@ func (m MpGame) LobbyView() tea.View {
 	fmt.Fprintf(&b, "\nKill line: %v", m.game.KillLine)
 
 	b.WriteString("\n\n> Players")
+	fmt.Fprintf(&b, "\nWaiting for %v more players to join", 2-len(m.players))
 	for x := range m.players {
 		fmt.Fprintf(&b, "\n- %v", x.String())
 	}
