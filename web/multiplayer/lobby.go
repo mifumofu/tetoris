@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"uuid"
 
-	"github.com/gorilla/websocket"
 	"github.com/mifumofu/tetoris/game"
 )
 
@@ -44,13 +43,7 @@ func (g *MpGame) sendLobbyUpdate(start bool) {
 		}
 
 		// send message
-		go func() {
-			err := p.conn.WriteMessage(websocket.BinaryMessage, b)
-			if err != nil {
-				p.logger.Warn("broadcast error", "err", err)
-				g.DisconnectClient(p)
-			}
-		}()
+		p.send <- b
 	}
 }
 

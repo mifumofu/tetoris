@@ -4,7 +4,6 @@ import (
 	"log/slog"
 	"math/rand"
 	"net/http"
-	"time"
 	"uuid"
 
 	"github.com/gorilla/websocket"
@@ -30,6 +29,7 @@ const (
 
 type client struct {
 	ID      uuid.UUID
+	send    chan []byte
 	conn    *websocket.Conn
 	request *http.Request
 	logger  *slog.Logger
@@ -40,7 +40,6 @@ func (g *MpGame) DisconnectClient(c client) {
 	delete(g.Players, c)
 
 	if g.state == StateLobby {
-		time.Sleep(50 * time.Millisecond) // avoids: panic: concurrent write to websocket connection
 		slog.Info("Sending lobby update")
 		g.sendLobbyUpdate(false)
 	}
@@ -77,12 +76,6 @@ func NewGame() (GameID, *MpGame) {
 // sends a message to all players in a game
 func (g *MpGame) sendAll(messageType int, data []byte) {
 	for p := range g.Players {
-		go func() {
-			err := p.conn.WriteMessage(messageType, data)
-			if err != nil {
-				p.logger.Warn("broadcast error", "err", err)
-				g.DisconnectClient(p)
-			}
-		}()
+		p.send <- data
 	}
 }

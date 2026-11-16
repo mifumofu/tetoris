@@ -42,6 +42,7 @@ func ConnectWS(g *MpGame, w http.ResponseWriter, r *http.Request) {
 
 	cid := uuid.NewV4()
 	c := client{
+		send:    make(chan []byte),
 		conn:    ws,
 		ID:      cid,
 		request: r,
@@ -58,6 +59,9 @@ func ConnectWS(g *MpGame, w http.ResponseWriter, r *http.Request) {
 		delete(g.Players, c)
 		ws.Close()
 	}()
+
+	// setup write channel
+	go c.write()
 
 	// send update in game state to players
 	if len(g.Players) == g.MaxPlayers {
@@ -97,6 +101,16 @@ func handleMpMessages(ws *websocket.Conn, c client, g *MpGame) {
 
 		if cont == false {
 			break
+		}
+	}
+}
+
+func (c *client) write() {
+	defer c.conn.Close()
+	for msg := range c.send {
+		if err := c.conn.WriteMessage(websocket.BinaryMessage, msg); err != nil {
+			c.logger.Error("Failed to send message to player", "err", err)
+			return
 		}
 	}
 }
